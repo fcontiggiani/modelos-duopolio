@@ -102,31 +102,6 @@ Una sección plegable desarrolla la derivación analítica de cada equilibrio (C
 - Diseño adaptable: en pantallas angostas los controles se apilan sobre los gráficos y las tablas se desplazan horizontalmente.
 - El motor matemático fue validado en Node.js (54 pruebas) contra las soluciones cerradas del caso lineal: Cournot, Stackelberg y colusión simétricos y asimétricos, Bertrand diferenciado y Stackelberg en precios, paradoja y precio límite de Bertrand, costos cuadráticos, dualidad de costos Cobb-Douglas frente a minimización numérica, CMg analítico frente a numérico, asimetría de calidad, θ = 0, curva de contrato y δ* = 9/17 y 1/2. Una prueba de estrés con 300 configuraciones aleatorias verifica que ningún modelo supera el bienestar competitivo ni el beneficio conjunto del cártel, y que el equilibrio de Cournot no admite desvíos unilaterales rentables.
 
-## Publicación en GitHub Pages
-
-1. Crear el repositorio público `modelos-duopolio` en la cuenta `fcontiggiani`.
-2. *Add file → Upload files*: subir `modelos_duopolio.html`, `README.md`, `screenshot.png` y `screenshot-oscuro.png` a la raíz de la rama `main`.
-3. *Settings → Pages → Build and deployment*: elegir *Deploy from a branch*, rama `main`, carpeta `/ (root)`.
-4. En uno o dos minutos el simulador queda disponible en:
-
-```
-https://fcontiggiani.github.io/modelos-duopolio/modelos_duopolio.html
-```
-
-## Integración en Moodle
-
-- **Recomendado: recurso URL.** *Agregar actividad o recurso → URL*, pegar la dirección anterior y, en *Apariencia*, elegir «Abrir en ventana nueva». Así se evita el filtrado de iframes de algunas instalaciones institucionales.
-- **Alternativa: incrustado.** En una página o etiqueta, con el editor en modo HTML:
-
-```html
-<iframe src="https://fcontiggiani.github.io/modelos-duopolio/modelos_duopolio.html"
-        width="100%" height="1500" style="border:0" loading="lazy"></iframe>
-```
-
-## Actualización
-
-Para publicar una nueva versión, volver a subir `modelos_duopolio.html` con el mismo nombre (*Add file → Upload files*, confirmar en `main`). GitHub Pages actualiza la URL automáticamente; si el navegador conserva la versión anterior, forzar la recarga con Ctrl+F5.
-
 ## Referencias
 
 - Varian, H. *Microeconomía intermedia*, cap. «Oligopolio» y «Teoría de juegos».
