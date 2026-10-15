@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelos de duopolio: Cournot, Bertrand y Stackelberg</title>
+<style>
+  :root{
+    color-scheme: light;
+    --surface-1:#fcfcfb; --surface-2:#f2f1ed; --page-plane:#f9f9f7;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+    --gridline:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,0.10);
+
+    --c-f1:#2a78d6;       /* firma 1 */
+    --c-f2:#d9622b;       /* firma 2 */
+    --c-contract:#7a5cc9; /* curva de contrato */
+    --c-pt:#6d6c68;       /* oferta precio-aceptante (p = CMg) */
+    --m-cournot:#4a3aa7;  /* equilibrio de Cournot */
+    --m-stq:#0f8b8d;      /* Stackelberg en cantidades */
+    --m-bert:#c2386f;     /* Bertrand */
+    --m-stp:#a36b00;      /* Stackelberg en precios */
+    --m-coll:#0b0b0b;     /* colusión / monopolio conjunto */
+    --m-comp:#178a5c;     /* competencia perfecta */
+    --m-dev:#8a97a8;      /* desvío del cártel */
+    --flag-bg:#fdecea; --flag-tx:#7a2b2b; --ok-bg:#e9f7ef; --ok-tx:#175c2e; --warn-bg:#fff4dc; --warn-tx:#6b4a00;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --surface-1:#1a1a19; --surface-2:#242423; --page-plane:#0d0d0d;
+      --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+      --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+      --c-f1:#4b9bf2; --c-f2:#f08a52; --c-contract:#a691f0; --c-pt:#a9a8a2;
+      --m-cournot:#9085e9; --m-stq:#3cc4c6; --m-bert:#e86d9c; --m-stp:#e0a526; --m-coll:#ffffff; --m-comp:#33c486; --m-dev:#9aa6b6;
+      --flag-bg:#3a1f1f; --flag-tx:#f2b8b8; --ok-bg:#16301f; --ok-tx:#a9e3bd; --warn-bg:#3a2f12; --warn-tx:#f1d48f;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --surface-1:#1a1a19; --surface-2:#242423; --page-plane:#0d0d0d;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --gridline:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,0.10);
+    --c-f1:#4b9bf2; --c-f2:#f08a52; --c-contract:#a691f0; --c-pt:#a9a8a2;
+    --m-cournot:#9085e9; --m-stq:#3cc4c6; --m-bert:#e86d9c; --m-stp:#e0a526; --m-coll:#ffffff; --m-comp:#33c486; --m-dev:#9aa6b6;
+    --flag-bg:#3a1f1f; --flag-tx:#f2b8b8; --ok-bg:#16301f; --ok-tx:#a9e3bd; --warn-bg:#3a2f12; --warn-tx:#f1d48f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--page-plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;}
+  .wrap{max-width:1440px;margin:0 auto;padding:24px 20px 56px;}
+  header h1{font-size:22px;margin:0 0 4px;}
+  header p.subtitle{margin:0 0 20px;color:var(--text-secondary);max-width:980px;}
+  .header-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .btn{font:inherit;padding:7px 14px;border-radius:8px;border:1px solid var(--baseline);
+    background:var(--surface-1);color:var(--text-primary);cursor:pointer;}
+  .btn:hover{background:var(--surface-2);}
+  .btn.small{padding:4px 10px;font-size:12.5px;}
+
+  .layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start;}
+  @media (max-width:1000px){ .layout{grid-template-columns:minmax(0,1fr);} }
+  .layout > *{min-width:0;}
+  .field select{width:100%;max-width:100%;}
+  .toggles select{max-width:100%;}
+
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:18px;}
+  .card h2{font-size:15px;margin:0 0 4px;}
+  .card h3{font-size:12px;margin:14px 0 6px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;}
+  .card p.hint{margin:0 0 12px;color:var(--text-secondary);font-size:12.5px;}
+  .card.f1{border-top:3px solid var(--c-f1);} .card.f2{border-top:3px solid var(--c-f2);}
+
+  .field{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;}
+  .field label{font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between;gap:8px;}
+  .field label .val{font-variant-numeric:tabular-nums;color:var(--text-primary);font-weight:600;}
+  .field label > .lt{flex:1;}
+  .field select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--baseline);
+    background:var(--surface-1);color:var(--text-primary);}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--baseline);border-radius:2px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--m-cournot);margin-top:-5.5px;border:2px solid var(--surface-1);box-shadow:0 0 0 1px var(--baseline);}
+  input[type=range]::-moz-range-track{height:4px;background:var(--baseline);border-radius:2px;}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--m-cournot);
+    border:2px solid var(--surface-1);box-shadow:0 0 0 1px var(--baseline);}
+  .f1 input[type=range]::-webkit-slider-thumb{background:var(--c-f1);} .f1 input[type=range]::-moz-range-thumb{background:var(--c-f1);}
+  .f2 input[type=range]::-webkit-slider-thumb{background:var(--c-f2);} .f2 input[type=range]::-moz-range-thumb{background:var(--c-f2);}
+  .field.limited label .val::after{content:" (tope)";font-weight:400;color:var(--text-muted);font-size:11px;}
+  input:disabled, select:disabled{opacity:.45;cursor:not-allowed;}
+
+  .seg{display:flex;border:1px solid var(--baseline);border-radius:8px;overflow:hidden;margin-bottom:10px;}
+  .seg button{flex:1;font:inherit;font-size:12.5px;padding:6px 8px;border:0;background:var(--surface-1);color:var(--text-secondary);cursor:pointer;}
+  .seg button + button{border-left:1px solid var(--baseline);}
+  .seg button.on{background:var(--surface-2);color:var(--text-primary);font-weight:600;}
+  .check{display:flex;align-items:center;gap:8px;font-size:13px;margin:4px 0 10px;cursor:pointer;user-select:none;}
+  .check input{accent-color:var(--text-primary);}
+
+  .formula{margin-top:8px;padding:8px 11px;background:var(--surface-2);border-radius:8px;font-size:12.5px;color:var(--text-secondary);}
+  .formula b{color:var(--text-primary);}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;background:var(--surface-2);
+    color:var(--text-secondary);border:1px solid var(--border);margin-top:6px;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+
+  .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .zoom-controls{display:flex;align-items:center;gap:4px;}
+  .zoom-controls button{font:inherit;width:28px;height:28px;padding:0;border-radius:6px;border:1px solid var(--baseline);
+    background:var(--surface-1);color:var(--text-primary);cursor:pointer;font-size:15px;}
+  .zoom-controls button:hover{background:var(--surface-2);}
+  .zoom-controls button.wide{width:auto;padding:0 10px;font-size:11.5px;}
+  .zoom-controls .zoom-label{font-size:11px;color:var(--text-muted);min-width:42px;text-align:center;font-variant-numeric:tabular-nums;}
+  .space-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px;}
+  .space-tabs .seg{margin:0;width:100%;max-width:380px;}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:6px 16px;margin:6px 0 4px;font-size:12.5px;align-items:center;}
+  .toggles .grp{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;width:100%;margin-top:4px;}
+  .toggles label{display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--text-secondary);user-select:none;}
+  .toggles input{margin:0;accent-color:var(--text-primary);cursor:pointer;}
+  .toggles select{font:inherit;font-size:12.5px;padding:3px 6px;border-radius:6px;border:1px solid var(--baseline);background:var(--surface-1);color:var(--text-primary);}
+  .sw{width:18px;height:0;border-top:3px solid;flex:none;}
+  .sw.dash{border-top-style:dashed;border-top-width:2px;}
+  .sw.dot{border-top-style:dotted;}
+  .mk{width:14px;height:14px;flex:none;}
+
+  canvas{display:block;width:100%;height:auto;background:var(--surface-1);border-radius:8px;touch-action:none;
+    border:1px solid var(--border);margin-top:8px;cursor:grab;}
+  canvas.dragging{cursor:grabbing;}
+  canvas.static{cursor:default;touch-action:auto;}
+  .canvas-hint{font-size:11.5px;color:var(--text-muted);margin-top:6px;}
+
+  .note{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:12.5px;background:var(--surface-2);color:var(--text-secondary);}
+  .note.flag{background:var(--flag-bg);color:var(--flag-tx);}
+  .note.ok{background:var(--ok-bg);color:var(--ok-tx);}
+  .note.warn{background:var(--warn-bg);color:var(--warn-tx);}
+  .note:empty{display:none;}
+  .note ul{margin:4px 0 0;padding-left:18px;} .note li{margin:2px 0;}
+
+  .tablewrap{overflow-x:auto;}
+  table.cmp{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;}
+  table.cmp th,table.cmp td{padding:6px 8px;border-bottom:1px solid var(--gridline);text-align:right;white-space:nowrap;}
+  table.cmp th:first-child,table.cmp td:first-child{text-align:left;color:var(--text-secondary);white-space:normal;min-width:190px;}
+  table.cmp thead th{color:var(--text-muted);font-weight:600;font-size:11.5px;border-bottom:1px solid var(--baseline);}
+  table.cmp td.neg{color:var(--flag-tx);}
+  table.cmp tr.dim td{opacity:.45;}
+  table.cmp .mrk{display:inline-flex;align-items:center;gap:7px;}
+  table.cmp th.f1{color:var(--c-f1);} table.cmp th.f2{color:var(--c-f2);}
+
+  .row2{display:grid;grid-template-columns:minmax(0,1fr);gap:0;}
+
+  details{margin-top:4px;}
+  details summary{cursor:pointer;font-weight:600;font-size:13.5px;}
+  .deriv{font-size:13px;color:var(--text-secondary);line-height:1.7;}
+  .deriv h4{font-size:13px;color:var(--text-primary);margin:16px 0 4px;}
+  .deriv .eq{display:block;margin:6px 0;padding:6px 10px;background:var(--surface-2);border-radius:6px;color:var(--text-primary);
+    font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:14.5px;overflow-x:auto;}
+  footer{margin-top:20px;color:var(--text-muted);font-size:11.5px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="header-row">
+      <div>
+        <h1>Modelos de duopolio: Cournot, Bertrand y Stackelberg</h1>
+        <p class="subtitle">
+          Dos firmas cuyos costos se derivan de distintas funciones de producción compiten en un mercado de bienes
+          homogéneos o diferenciados. El simulador resuelve el equilibrio de Nash en cantidades (Cournot) y en precios
+          (Bertrand), el equilibrio perfecto en subjuegos con liderazgo (Stackelberg en cantidades y en precios), el
+          resultado cooperativo de colusión (monopolio conjunto) y la asignación de competencia perfecta, y los representa
+          en el espacio estratégico con funciones de reacción, curvas de isobeneficio y curva de contrato.
+        </p>
+      </div>
+      <button class="btn" id="themeToggle" type="button">Tema oscuro</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ===================== COLUMNA DE CONTROLES ===================== -->
+    <aside>
+      <div class="card">
+        <h2>Escenario</h2>
+        <p class="hint">Configuraciones de referencia para la clase. Cualquier control puede modificarse luego.</p>
+        <div class="field">
+          <label for="preset">Escenario predefinido</label>
+          <select id="preset">
+            <option value="base">1. Bien homogéneo, CMg constante y simétrico</option>
+            <option value="asym">2. Bien homogéneo, asimetría de costos (Leontief)</option>
+            <option value="convex">3. Bien homogéneo, CMg creciente (Cobb-Douglas de corto plazo)</option>
+            <option value="diff">4. Bienes diferenciados, firmas simétricas</option>
+            <option value="quality">5. Diferenciados con asimetría de calidad y de tecnología</option>
+            <option value="close">6. Sustitutos cercanos (θ = 0,95)</option>
+          </select>
+        </div>
+        <div class="btnrow"><button class="btn small" id="resetBtn" type="button">Restablecer escenario</button></div>
+      </div>
+
+      <div class="card">
+        <h2>Demanda</h2>
+        <p class="hint">Demanda lineal con diferenciación (Bowley; Singh y Vives): p<sub>i</sub> = a<sub>i</sub> − b·q<sub>i</sub> − θ·b·q<sub>j</sub>.</p>
+        <div class="seg" id="goodType">
+          <button type="button" data-v="homog">Bienes homogéneos</button>
+          <button type="button" data-v="diff">Bienes diferenciados</button>
+        </div>
+        <div id="demParams"></div>
+        <div class="formula" id="demandFormula"></div>
+      </div>
+
+      <div class="card">
+        <h2>Simetría de las firmas</h2>
+        <label class="check"><input type="checkbox" id="symChk"> Firmas simétricas (la firma 2 replica la tecnología, los costos y la demanda de la firma 1)</label>
+        <p class="hint" style="margin:0">Con firmas simétricas el equilibrio de colusión y el competitivo se calculan sobre la diagonal q<sub>1</sub> = q<sub>2</sub>, lo que resuelve la indeterminación del reparto cuando los costos marginales son constantes e iguales.</p>
+      </div>
+
+      <div class="card f1" id="cardF1">
+        <h2 style="color:var(--c-f1)">Firma 1</h2>
+        <div class="field">
+          <label for="tech0">Función de producción</label>
+          <select id="tech0"></select>
+        </div>
+        <div id="params0"></div>
+        <div class="formula" id="prod0"></div>
+        <div class="formula" id="cost0"></div>
+        <span class="tag" id="rts0"></span>
+      </div>
+
+      <div class="card f2" id="cardF2">
+        <h2 style="color:var(--c-f2)">Firma 2</h2>
+        <div class="note" id="symNote" style="margin:0 0 10px"></div>
+        <div class="field">
+          <label for="tech1">Función de producción</label>
+          <select id="tech1"></select>
+        </div>
+        <div id="params1"></div>
+        <div class="formula" id="prod1"></div>
+        <div class="formula" id="cost1"></div>
+        <span class="tag" id="rts1"></span>
+      </div>
+
+      <div class="card">
+        <h2>Precios de los factores</h2>
+        <p class="hint">Comunes a ambas firmas: las asimetrías de costos provienen de la tecnología.</p>
+        <div id="facParams"></div>
+      </div>
+    </aside>
+
+    <!-- ===================== COLUMNA GRÁFICA ===================== -->
+    <main>
+      <div class="card">
+        <div class="panel-head">
+          <h2 id="plotTitle">Espacio estratégico</h2>
+          <div class="zoom-controls" data-plot="main">
+            <button type="button" data-z="out" title="Alejar">−</button>
+            <span class="zoom-label">100%</span>
+            <button type="button" data-z="in" title="Acercar">+</button>
+            <button type="button" class="wide" data-z="fit" title="Ajuste automático">Ajustar</button>
+          </div>
+        </div>
+        <div class="space-tabs">
+          <div class="seg" id="spaceSeg">
+            <button type="button" data-v="q">Cantidades (q₁, q₂)</button>
+            <button type="button" data-v="p">Precios (p₁, p₂)</button>
+          </div>
+        </div>
+        <div class="toggles" id="togCurves">
+          <span class="grp">Curvas</span>
+          <label><input type="checkbox" data-k="r1"><span class="sw" style="border-color:var(--c-f1)"></span>Función de reacción de la firma 1 (R₁)</label>
+          <label><input type="checkbox" data-k="r2"><span class="sw" style="border-color:var(--c-f2)"></span>Función de reacción de la firma 2 (R₂)</label>
+          <label><input type="checkbox" data-k="iso"><span class="sw dash" style="border-color:var(--text-secondary)"></span>Isobeneficios por</label>
+          <select id="isoAt" aria-label="Equilibrio por el que pasan las isobeneficio">
+            <option value="cournot">Cournot</option>
+            <option value="stq1">Stackelberg (cantidades, líder 1)</option>
+            <option value="stq2">Stackelberg (cantidades, líder 2)</option>
+            <option value="bert">Bertrand</option>
+            <option value="stp1">Stackelberg (precios, líder 1)</option>
+            <option value="stp2">Stackelberg (precios, líder 2)</option>
+            <option value="coll">Colusión</option>
+          </select>
+          <label><input type="checkbox" data-k="isomap"><span class="sw dot" style="border-color:var(--text-muted)"></span>Mapa de isobeneficios</label>
+          <label><input type="checkbox" data-k="contract"><span class="sw" style="border-color:var(--c-contract)"></span>Curva de contrato (tangencias)</label>
+          <label><input type="checkbox" data-k="pt"><span class="sw dash" style="border-color:var(--c-pt)"></span>Ofertas precio-aceptantes (p<sub>i</sub> = CMg<sub>i</sub>)</label>
+          <label><input type="checkbox" data-k="dev"><span class="sw dot" style="border-color:var(--m-dev)"></span>Desvíos óptimos del cártel</label>
+          <span class="grp">Equilibrios</span>
+          <label><input type="checkbox" data-m="cournot"><svg class="mk" data-mk="cournot"></svg>Cournot (N)</label>
+          <label><input type="checkbox" data-m="stq"><svg class="mk" data-mk="stq1"></svg>Stackelberg en cantidades (S₁, S₂)</label>
+          <label><input type="checkbox" data-m="bert"><svg class="mk" data-mk="bert"></svg>Bertrand (B)</label>
+          <label id="lblStp"><input type="checkbox" data-m="stp"><svg class="mk" data-mk="stp1"></svg>Stackelberg en precios (P₁, P₂)</label>
+          <label><input type="checkbox" data-m="coll"><svg class="mk" data-mk="coll"></svg>Colusión (M)</label>
+          <label><input type="checkbox" data-m="comp"><svg class="mk" data-mk="comp"></svg>Competencia perfecta (C)</label>
+        </div>
+        <canvas id="cvMain" width="1000" height="680"></canvas>
+        <div class="canvas-hint">Rueda del mouse o pellizco: zoom centrado en el cursor (Mayús: solo eje horizontal; Alt: solo eje vertical) · Arrastrar: desplazar · Doble clic: ajuste automático. Al modificar parámetros se conserva la vista elegida; «Ajustar» la recalcula.</div>
+        <div class="note" id="spaceNote"></div>
+      </div>
+
+      <div class="card">
+        <h2>Resultados de todos los modelos</h2>
+        <p class="hint" id="tableHint"></p>
+        <div class="tablewrap"><table class="cmp" id="resTable"></table></div>
+        <div class="note" id="bertNote"></div>
+        <div class="note" id="rankNote"></div>
+      </div>
+
+      <div class="row2">
+        <div class="card">
+          <div class="panel-head">
+            <h2>Comparación entre modelos</h2>
+            <div class="toggles" style="margin:0">
+              <select id="metric" aria-label="Variable a comparar">
+                <option value="Q">Cantidad total Q</option>
+                <option value="pAvg">Precio medio ponderado</option>
+                <option value="pi0">Beneficio de la firma 1</option>
+                <option value="pi1">Beneficio de la firma 2</option>
+                <option value="Pi">Beneficio conjunto Π</option>
+                <option value="CS">Excedente del consumidor</option>
+                <option value="W">Excedente total W</option>
+                <option value="PIE">Pérdida irrecuperable de eficiencia</option>
+                <option value="HHI">Índice HHI</option>
+              </select>
+            </div>
+          </div>
+          <canvas id="cvBar" class="static" width="700" height="420"></canvas>
+        </div>
+        <div class="card">
+          <h2>Sostenibilidad de la colusión</h2>
+          <p class="hint">Juego repetido infinitamente con factor de descuento δ y estrategias gatillo (<i>grim trigger</i>): ante un desvío, reversión permanente al equilibrio de Nash del juego de etapa. La colusión es sostenible si δ ≥ δ* = (π<sup>D</sup> − π<sup>M</sup>)/(π<sup>D</sup> − π<sup>N</sup>).</p>
+          <div class="tablewrap"><table class="cmp" id="stabTable"></table></div>
+          <div class="note" id="stabNote"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <details id="derivBox">
+          <summary>Derivación analítica de los equilibrios (con los valores vigentes)</summary>
+          <div class="deriv" id="deriv"></div>
+        </details>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    Material desarrollado con fines exclusivamente didácticos. Los valores numéricos son ilustrativos.
+    Documento autocontenido (HTML, CSS y JavaScript en un único archivo, sin dependencias externas),
+    apto para GitHub Pages y para su enlace desde Moodle.
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+ * MOTOR MATEMÁTICO — Simulador de modelos de duopolio
+ * ---------------------------------------------------------------------
+ * Demanda lineal con diferenciación (Bowley / Singh–Vives):
+ *   U(q1,q2) = a1 q1 + a2 q2 − ½ (b q1² + 2 g q1 q2 + b q2²) + m
+ *   p_i = a_i − b q_i − g q_j ,  g = θ·b ,  θ ∈ [0,1]
+ *   θ = 1 y a1 = a2  →  bienes homogéneos ;  θ = 0 → mercados independientes
+ * Costos: derivados de la minimización de costos de cada tecnología
+ *   (Leontief, Cobb-Douglas de largo plazo, Cobb-Douglas de corto plazo
+ *    con K fijo, y costo cuadrático genérico).
+ * Todas las soluciones se obtienen numéricamente (bisección sobre CPO
+ * monótonas, sección áurea sobre problemas cóncavos) y se validan en
+ * Node contra las soluciones cerradas del caso lineal.
+ * ===================================================================== */
+(function (root) {
+  'use strict';
+
+  const EPS = 1e-12;
+
+  /* ---------------- Funciones de costo a partir de la tecnología ------- */
+  // f = {tipo, ...parámetros}; fac = {w, r} precios de los factores
+  function makeCost(f, fac) {
+    const w = fac.w, r = fac.r;
+    let o;
+    switch (f.tipo) {
+      case 'leontief': {
+        // q = min(K/κ, L/λ)  ⇒  K = κq, L = λq  ⇒  C(q) = (rκ + wλ) q + F
+        const c = r * f.kappa + w * f.lambda, F = f.F || 0;
+        o = { C: q => F + c * q, Cm: () => c, CF: F, constMC: true, c,
+              txt: { C: `${fx(F)} + ${fx(c)}·q`, Cm: `${fx(c)}` } };
+        break;
+      }
+      case 'cdlp': {
+        // q = A K^α L^β, s = α+β ≤ 1 (rendimientos constantes o decrecientes)
+        // C(q) = s (q/A)^{1/s} (r/α)^{α/s} (w/β)^{β/s}  ≡ θ q^{1/s}
+        const s = f.alpha + f.beta, e = 1 / s;
+        const th = s * Math.pow(1 / f.A, e) * Math.pow(r / f.alpha, f.alpha / s) * Math.pow(w / f.beta, f.beta / s);
+        const cm = Math.abs(e - 1) < 1e-9, F = f.F || 0;
+        o = { C: q => F + th * Math.pow(Math.max(q, 0), e),
+              Cm: q => cm ? th : th * e * Math.pow(Math.max(q, 0), e - 1),
+              CF: F, constMC: cm, c: cm ? th : null, theta: th, e,
+              txt: { C: cm ? `${fx(th)}·q` : `${fx(th)}·q^${fx(e, 3)}`,
+                     Cm: cm ? `${fx(th)}` : `${fx(th * e)}·q^${fx(e - 1, 3)}` } };
+        break;
+      }
+      case 'cdcp': {
+        // q = A K̄^α L^β  ⇒  L(q) = (q / (A K̄^α))^{1/β}
+        // C(q) = r K̄ + w (q / (A K̄^α))^{1/β}
+        const B = f.A * Math.pow(f.Kbar, f.alpha), e = 1 / f.beta;
+        const k = w * Math.pow(1 / B, e), CF = r * f.Kbar + (f.F || 0);
+        const cm = Math.abs(e - 1) < 1e-9;
+        o = { C: q => CF + k * Math.pow(Math.max(q, 0), e),
+              Cm: q => cm ? k : k * e * Math.pow(Math.max(q, 0), e - 1),
+              CF, constMC: cm, c: cm ? k : null, k, e,
+              txt: { C: `${fx(CF)} + ${fx(k, 4)}·q^${fx(e, 3)}`,
+                     Cm: cm ? `${fx(k)}` : `${fx(k * e, 4)}·q^${fx(e - 1, 3)}` } };
+        break;
+      }
+      case 'cuad':
+      default: {
+        // C(q) = F + c q + (d/2) q²
+        const F = f.F || 0, c = f.c, d = f.d;
+        const cm = Math.abs(d) < 1e-12;
+        o = { C: q => F + c * q + 0.5 * d * q * q, Cm: q => c + d * q, CF: F, constMC: cm, c: cm ? c : null,
+              txt: { C: `${fx(F)} + ${fx(c)}·q + ${fx(d / 2, 3)}·q²`, Cm: `${fx(c)} + ${fx(d, 3)}·q` } };
+      }
+    }
+    o.tipo = f.tipo;
+    return o;
+  }
+
+  function fx(v, d = 2) {
+    if (!isFinite(v)) return '—';
+    return Number(v).toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+
+  /* ---------------- Optimizadores 1D ---------------------------------- */
+  // Bisección para raíz de función decreciente f en [lo, hi] con f(lo)>0≥f(hi)
+  function bisectDec(f, lo, hi, it = 90) {
+    for (let k = 0; k < it; k++) {
+      const m = 0.5 * (lo + hi);
+      if (f(m) > 0) lo = m; else hi = m;
+      if (hi - lo < 1e-13 * (1 + Math.abs(hi))) break;
+    }
+    return 0.5 * (lo + hi);
+  }
+
+  // Sección áurea (maximización) en [lo, hi]
+  function golden(f, lo, hi, it = 120) {
+    const R = (Math.sqrt(5) - 1) / 2;
+    let x1 = hi - R * (hi - lo), x2 = lo + R * (hi - lo), f1 = f(x1), f2 = f(x2);
+    for (let k = 0; k < it && hi - lo > 1e-11 * (1 + Math.abs(lo) + Math.abs(hi)); k++) {
+      if (f1 < f2) { lo = x1; x1 = x2; f1 = f2; x2 = lo + R * (hi - lo); f2 = f(x2); }
+      else { hi = x2; x2 = x1; f2 = f1; x1 = hi - R * (hi - lo); f1 = f(x1); }
+    }
+    const x = 0.5 * (lo + hi);
+    return x;
+  }
+
+  // Máximo global aproximado: grilla + refinamiento áureo (robusto a no concavidades)
+  function maximize1D(f, lo, hi, n = 160) {
+    let best = -Infinity, bi = 0;
+    const h = (hi - lo) / n;
+    for (let i = 0; i <= n; i++) { const v = f(lo + i * h); if (v > best) { best = v; bi = i; } }
+    const a = lo + Math.max(0, bi - 1) * h, b = lo + Math.min(n, bi + 1) * h;
+    const x = golden(f, a, b);
+    // conserva el extremo si es mejor (soluciones de esquina)
+    const cand = [x, lo + bi * h, lo, hi];
+    let xb = x, vb = f(x);
+    for (const c of cand) { const v = f(c); if (v > vb + 1e-12) { vb = v; xb = c; } }
+    return xb;
+  }
+
+  /* ---------------- Modelo ------------------------------------------- */
+  // P = {a1, a2, b, theta, firms:[f1,f2], fac:{w,r}, sym:bool}
+  function build(P) {
+    const b = P.b, g = P.theta * P.b;
+    const a = [P.a1, P.homog ? P.a1 : P.a2];
+    const C = [makeCost(P.firms[0], P.fac), makeCost(P.firms[1], P.fac)];
+    const homog = !!P.homog || P.theta >= 1 - 1e-12;
+    return { a, b, g, C, homog, sym: !!P.sym && a[0] === a[1] };
+  }
+
+  const other = i => 1 - i;
+
+  // Demanda inversa
+  function priceQ(M, i, qi, qj) { return M.a[i] - M.b * qi - M.g * qj; }
+  function profitQ(M, i, q) {
+    const qi = q[i], qj = q[other(i)];
+    return priceQ(M, i, qi, qj) * qi - M.C[i].C(qi);
+  }
+
+  // Demanda directa (sólo θ<1), con esquinas cuando una firma queda fuera
+  function demandP(M, p) {
+    const { a, b, g } = M, D = b * b - g * g;
+    let q0 = (b * (a[0] - p[0]) - g * (a[1] - p[1])) / D;
+    let q1 = (b * (a[1] - p[1]) - g * (a[0] - p[0])) / D;
+    if (q0 >= 0 && q1 >= 0) return [q0, q1];
+    // sólo la firma 0 vende
+    const s0 = Math.max(0, (a[0] - p[0]) / b);
+    if (s0 > 0 && a[1] - g * s0 <= p[1]) return [s0, 0];
+    const s1 = Math.max(0, (a[1] - p[1]) / b);
+    if (s1 > 0 && a[0] - g * s1 <= p[0]) return [0, s1];
+    return [0, 0];
+  }
+  function profitP(M, i, p) {
+    const q = demandP(M, p);
+    return p[i] * q[i] - M.C[i].C(q[i]);
+  }
+
+  /* ---- Función de reacción en cantidades (CPO monótona ⇒ bisección) ---- */
+  // ∂π_i/∂q_i = a_i − 2b q_i − g q_j − CMg_i(q_i) = 0
+  function brQ(M, i, qj) {
+    const f = q => M.a[i] - 2 * M.b * q - M.g * qj - M.C[i].Cm(q);
+    if (f(0) <= 0) return 0;
+    const hi = (M.a[i] - M.g * qj) / (2 * M.b);
+    return bisectDec(f, 0, hi);
+  }
+
+  /* ---- Función de reacción en precios (θ<1) ---- */
+  // Derivada analítica de π_i respecto de p_i (según el régimen de demanda vigente)
+  function dProfitP(M, i, p) {
+    const q = demandP(M, p), j = other(i);
+    if (q[i] <= 0) return NaN;
+    const dq = q[j] > 0 ? -M.b / (M.b * M.b - M.g * M.g) : -1 / M.b;
+    return q[i] + (p[i] - M.C[i].Cm(q[i])) * dq;
+  }
+  function brP(M, i, pj) {
+    const hi = M.a[i];
+    const prof = x => profitP(M, i, i === 0 ? [x, pj] : [pj, x]);
+    const der = x => dProfitP(M, i, i === 0 ? [x, pj] : [pj, x]);
+    const n = 200, h = hi / n;
+    let best = -Infinity, bi = 0;
+    for (let k = 0; k <= n; k++) { const v = prof(k * h); if (v > best) { best = v; bi = k; } }
+    let lo = Math.max(0, bi - 1) * h, up = Math.min(n, bi + 1) * h;
+    const dl = der(lo), du = der(up);
+    let x;
+    if (dl > 0 && du < 0) {            // CPO interior: bisección sobre la derivada analítica
+      for (let k = 0; k < 100 && up - lo > 1e-13 * (1 + up); k++) {
+        const m = 0.5 * (lo + up), d = der(m);
+        if (d > 0 || isNaN(d)) lo = m; else up = m;
+      }
+      x = 0.5 * (lo + up);
+    } else x = golden(prof, lo, up);   // esquinas o quiebres de la demanda
+    return prof(x) >= prof(bi * h) ? x : bi * h;
+  }
+
+  /* ---------------- Equilibrios ------------------------------------- */
+  function cournot(M) {
+    let q = [0, 0];
+    for (let k = 0; k < 5000; k++) {
+      const n0 = brQ(M, 0, q[1]);
+      const n1 = brQ(M, 1, n0);
+      const d = Math.abs(n0 - q[0]) + Math.abs(n1 - q[1]);
+      q = [n0, n1];
+      if (d < 1e-12) break;
+    }
+    return q;
+  }
+
+  function stackelbergQ(M, L) {
+    const F = other(L);
+    const obj = qL => { const q = []; q[L] = qL; q[F] = brQ(M, F, qL); return profitQ(M, L, q); };
+    const qL = maximize1D(obj, 0, M.a[L] / M.b, 400);
+    const q = []; q[L] = qL; q[F] = brQ(M, F, qL);
+    return q;
+  }
+
+  function bertrandDiff(M) {
+    let p = [M.a[0] / 2, M.a[1] / 2];
+    for (let k = 0; k < 2000; k++) {
+      const n0 = brP(M, 0, p[1]);
+      const n1 = brP(M, 1, n0);
+      const d = Math.abs(n0 - p[0]) + Math.abs(n1 - p[1]);
+      p = [n0, n1];
+      if (d < 1e-10) break;
+    }
+    return p;
+  }
+
+  function stackelbergP(M, L) {
+    const F = other(L);
+    const obj = pL => { const p = []; p[L] = pL; p[F] = brP(M, F, pL); return profitP(M, L, p); };
+    const pL = maximize1D(obj, 0, M.a[L], 240);
+    const p = []; p[L] = pL; p[F] = brP(M, F, pL);
+    return p;
+  }
+
+  // Maximización conjunta cóncava de G(q1,q2) cuyo gradiente parcial en q2 es
+  // decreciente en q2: anidada (exterior áurea, interior bisección de la CPO).
+  function maxJoint(M, G, dG2, sym) {
+    if (sym) {
+      const qs = golden(x => G([x, x]), 0, M.a[0] / M.b);
+      return [qs, qs];
+    }
+    const inner = q1 => {
+      const f = q2 => dG2(q1, q2);
+      if (f(0) <= 0) return 0;
+      return bisectDec(f, 0, M.a[1] / M.b * 2 + 1);
+    };
+    const V = q1 => G([q1, inner(q1)]);
+    const q1 = maximize1D(V, 0, M.a[0] / M.b, 200);
+    return [q1, inner(q1)];
+  }
+
+  // Colusión / monopolio conjunto: máx π1 + π2
+  function collusion(M) {
+    const G = q => profitQ(M, 0, q) + profitQ(M, 1, q);
+    const dG2 = (q1, q2) => M.a[1] - 2 * M.b * q2 - 2 * M.g * q1 - M.C[1].Cm(q2);
+    return maxJoint(M, G, dG2, M.sym);
+  }
+
+  // Competencia perfecta: p_i = CMg_i  ⇔  máx bienestar W = U(q) − C1 − C2
+  function utility(M, q) {
+    return M.a[0] * q[0] + M.a[1] * q[1] - 0.5 * (M.b * q[0] * q[0] + 2 * M.g * q[0] * q[1] + M.b * q[1] * q[1]);
+  }
+  function competitive(M) {
+    const G = q => utility(M, q) - M.C[0].C(q[0]) - M.C[1].C(q[1]);
+    const dG2 = (q1, q2) => M.a[1] - M.b * q2 - M.g * q1 - M.C[1].Cm(q2);
+    return maxJoint(M, G, dG2, M.sym);
+  }
+
+  // Bertrand con bienes homogéneos y CMg constantes (paradoja de Bertrand)
+  function bertrandHomogConst(M) {
+    const c0 = M.C[0].c, c1 = M.C[1].c, a = M.a[0], b = M.b;
+    const tol = 1e-9 * (1 + Math.abs(c0) + Math.abs(c1));
+    if (Math.abs(c0 - c1) <= tol) {
+      const p = c0, Q = Math.max(0, (a - p) / b);
+      return { p: [p, p], q: [Q / 2, Q / 2], caso: 'simetrico' };
+    }
+    const lo = c0 < c1 ? 0 : 1, hiF = other(lo);
+    const cl = M.C[lo].c, ch = M.C[hiF].c, pm = (a + cl) / 2;
+    const p = Math.min(ch, pm);
+    const Q = Math.max(0, (a - p) / b);
+    const q = [0, 0]; q[lo] = Q;
+    return { p: [p, p], q, caso: ch < pm ? 'limite' : 'monopolio', lider: lo };
+  }
+
+  /* ---------------- Resultados de un perfil ------------------------- */
+  function outcome(M, key, q, p, extra) {
+    p = p || [priceQ(M, 0, q[0], q[1]), priceQ(M, 1, q[1], q[0])];
+    const pi = [p[0] * q[0] - M.C[0].C(q[0]), p[1] * q[1] - M.C[1].C(q[1])];
+    const CS = utility(M, q) - p[0] * q[0] - p[1] * q[1];
+    const Q = q[0] + q[1];
+    const sh = Q > EPS ? [q[0] / Q, q[1] / Q] : [0.5, 0.5];
+    const lern = [0, 1].map(i => (q[i] > EPS && p[i] > EPS) ? (p[i] - M.C[i].Cm(q[i])) / p[i] : null);
+    return Object.assign({ key, q, p, pi, Pi: pi[0] + pi[1], CS, W: CS + pi[0] + pi[1], Q,
+      pAvg: Q > EPS ? (p[0] * q[0] + p[1] * q[1]) / Q : (p[0] + p[1]) / 2,
+      HHI: 10000 * (sh[0] * sh[0] + sh[1] * sh[1]), lern }, extra || {});
+  }
+
+  function solveAll(P) {
+    const M = build(P);
+    const R = {};
+    R.cournot = outcome(M, 'cournot', cournot(M));
+    R.stq1 = outcome(M, 'stq1', stackelbergQ(M, 0));
+    R.stq2 = outcome(M, 'stq2', stackelbergQ(M, 1));
+    R.coll = outcome(M, 'coll', collusion(M));
+    R.comp = outcome(M, 'comp', competitive(M));
+    if (!M.homog) {
+      const p = bertrandDiff(M);
+      R.bert = outcome(M, 'bert', demandP(M, p), p);
+      const s1 = stackelbergP(M, 0), s2 = stackelbergP(M, 1);
+      R.stp1 = outcome(M, 'stp1', demandP(M, s1), s1);
+      R.stp2 = outcome(M, 'stp2', demandP(M, s2), s2);
+    } else if (M.C[0].constMC && M.C[1].constMC) {
+      const r = bertrandHomogConst(M);
+      R.bert = outcome(M, 'bert', r.q, r.p, { caso: r.caso, lider: r.lider });
+    } else {
+      // CMg creciente con bienes homogéneos: continuo de equilibrios (Dastidar, 1995).
+      // Se informa como referencia el resultado p = CMg (tomadoras de precios).
+      R.bert = outcome(M, 'bert', R.comp.q, R.comp.p, { caso: 'dastidar' });
+    }
+    for (const k in R) R[k].PIE = R.comp.W - R[k].W;
+    return { M, R };
+  }
+
+  /* ---------------- Curvas para graficar ----------------------------- */
+  // Curva de contrato (tangencia de isobeneficios): IMg1·IMg2 = g² q1 q2, IMg_i > 0
+  function contractCurve(M, n = 220) {
+    if (M.g < 1e-9) return [];
+    const pts = [];
+    const q1max = brQ(M, 0, 0) * 1.0000001;
+    for (let k = 0; k <= n; k++) {
+      const q1 = q1max * k / n;
+      const MR1 = q2 => M.a[0] - 2 * M.b * q1 - M.g * q2 - M.C[0].Cm(q1);
+      const MR2 = q2 => M.a[1] - 2 * M.b * q2 - M.g * q1 - M.C[1].Cm(q2);
+      if (MR1(0) <= 0 || MR2(0) <= 0) continue;
+      const u1 = MR1(0) / M.g;                      // MR1 = 0
+      const u2 = MR2(0) > 0 ? bisectDec(MR2, 0, M.a[1] / M.b) : 0; // MR2 = 0
+      const U = Math.min(u1, u2);
+      const h = q2 => MR1(q2) * MR2(q2) - M.g * M.g * q1 * q2;
+      const q2 = h(0) <= 0 ? 0 : bisectDec(h, 0, U);
+      pts.push([q1, q2]);
+    }
+    return pts;
+  }
+
+  // Marching squares: segmentos de la curva de nivel f(x,y)=lev
+  function contour(f, x0, x1, y0, y1, nx, ny, lev) {
+    const hx = (x1 - x0) / nx, hy = (y1 - y0) / ny, V = [];
+    for (let j = 0; j <= ny; j++) {
+      const row = new Float64Array(nx + 1);
+      for (let i = 0; i <= nx; i++) row[i] = f(x0 + i * hx, y0 + j * hy) - lev;
+      V.push(row);
+    }
+    const segs = [];
+    const lerp = (va, vb) => va / (va - vb);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const v0 = V[j][i], v1 = V[j][i + 1], v2 = V[j + 1][i + 1], v3 = V[j + 1][i];
+      const X = x0 + i * hx, Y = y0 + j * hy, E = [];
+      if ((v0 > 0) !== (v1 > 0)) E.push([X + hx * lerp(v0, v1), Y]);
+      if ((v1 > 0) !== (v2 > 0)) E.push([X + hx, Y + hy * lerp(v1, v2)]);
+      if ((v3 > 0) !== (v2 > 0)) E.push([X + hx * lerp(v3, v2), Y + hy]);
+      if ((v0 > 0) !== (v3 > 0)) E.push([X, Y + hy * lerp(v0, v3)]);
+      if (E.length === 2) segs.push([E[0], E[1]]);
+      else if (E.length === 4) { segs.push([E[0], E[1]]); segs.push([E[2], E[3]]); }
+    }
+    return segs;
+  }
+
+  // Oferta de la firma precio-aceptante dado q_j: p_i(q_i, q_j) = CMg_i(q_i)
+  function ptQ(M, i, qj) {
+    const f = q => M.a[i] - M.b * q - M.g * qj - M.C[i].Cm(q);
+    if (f(0) <= 0) return 0;
+    return bisectDec(f, 0, (M.a[i] - M.g * qj) / M.b);
+  }
+
+  /* ---- Sostenibilidad de la colusión en el juego repetido (estrategias gatillo) ----
+     δ*_i = (π_i^D − π_i^C) / (π_i^D − π_i^N): desvío óptimo de un período frente al cártel,
+     y castigo por reversión permanente al equilibrio de Nash del juego de etapa. */
+  function stability(M, R) {
+    const tiny = 1e-9;
+    const delta = (piC, piD, piN) => {
+      if (piC < piN - tiny) return { delta: null, excl: true, piC, piD, piN };
+      if (piD <= piC + tiny * (1 + Math.abs(piC))) return { delta: 0, piC, piD, piN };
+      return { delta: (piD - piC) / (piD - piN), piC, piD, piN };
+    };
+    const out = { q: [], p: [] };
+    for (const i of [0, 1]) {
+      const j = other(i), qc = R.coll.q;
+      const q = []; q[j] = qc[j]; q[i] = brQ(M, i, qc[j]);
+      out.q[i] = Object.assign(delta(R.coll.pi[i], profitQ(M, i, q), R.cournot.pi[i]), { qDev: q.slice() });
+      if (!M.homog) {
+        const pc = R.coll.p, p = []; p[j] = pc[j]; p[i] = brP(M, i, pc[j]);
+        out.p[i] = Object.assign(delta(R.coll.pi[i], profitP(M, i, p), R.bert.pi[i]), { pDev: p.slice(), qDev: demandP(M, p) });
+      } else if (M.C[0].constMC && M.C[1].constMC) {
+        // bien homogéneo: el desviador cobra p^C − ε y capta toda la demanda Q^C
+        const pc = R.coll.p[0], Q = R.coll.Q;
+        const piD = Math.max(pc * Q - M.C[i].C(Q), R.coll.pi[i]);
+        const qd = [0, 0]; qd[i] = Q;
+        out.p[i] = Object.assign(delta(R.coll.pi[i], piD, R.bert.pi[i]), { pDev: [pc, pc], qDev: qd });
+      } else out.p[i] = null;
+    }
+    return out;
+  }
+
+  // Beneficio máximo de la firma i como monopolista (q_j = 0)
+  function monoProfit(M, i) { const q = [0, 0]; q[i] = brQ(M, i, 0); return profitQ(M, i, q); }
+
+  const API = { makeCost, build, priceQ, profitQ, demandP, profitP, brQ, brP, cournot, stackelbergQ,
+    bertrandDiff, stackelbergP, collusion, competitive, bertrandHomogConst, outcome, solveAll,
+    contractCurve, contour, monoProfit, ptQ, stability, dProfitP, maximize1D, golden, fx, utility };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else root.Duo = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+"use strict";
+const D = window.Duo;
+const el = id => document.getElementById(id);
+
+function fmt(x, d){
+  if (x===null || x===undefined || !isFinite(x)) return '—';
+  const dec = (d===undefined) ? (Math.abs(x)<10?2:1) : d;
+  let v = Number(x); if (Math.abs(v) < 0.5*Math.pow(10,-dec)) v = 0;
+  return v.toLocaleString('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+
+/* ============================================================
+   1. TECNOLOGÍAS (parámetros de la interfaz)
+   Cada firma guarda los parámetros de las cuatro tecnologías, de modo que
+   al alternar entre ellas se conservan los valores elegidos.
+   ============================================================ */
+const TECHS = {
+  leontief: {
+    label:'Leontief (proporciones fijas)',
+    params:[
+      {key:'kappa',  label:'Requerimiento unitario de K (κ)', min:0.1, max:3, step:0.05},
+      {key:'lambda', label:'Requerimiento unitario de L (λ)', min:0.1, max:3, step:0.05},
+      {key:'F',      label:'Costo fijo (F)',                  min:0,   max:800, step:10}
+    ],
+    def:{kappa:1, lambda:1, F:0},
+    prod: p => 'q = mín( K/'+fmt(p.kappa)+' , L/'+fmt(p.lambda)+' )',
+    costHTML: (p,C,fac) => 'C(q) = F + (r·κ + w·λ)·q = '+fmt(C.CF,1)+' + '+fmt(C.c,2)+'·q',
+    rts: () => 'Rendimientos constantes a escala: CMg constante'
+  },
+  cdlp: {
+    label:'Cobb-Douglas — largo plazo',
+    params:[
+      {key:'A',     label:'Productividad total (A)',     min:0.5, max:4,   step:0.05},
+      {key:'alpha', label:'Elasticidad del capital (α)', min:0.1, max:0.8, step:0.05},
+      {key:'beta',  label:'Elasticidad del trabajo (β)', min:0.1, max:0.9, step:0.05},
+      {key:'F',     label:'Costo fijo (F)',              min:0,   max:800, step:10}
+    ],
+    def:{A:1, alpha:0.4, beta:0.5, F:0},
+    // Se excluyen los rendimientos crecientes (α + β > 1): π_i deja de ser cóncava y el CMg decrece.
+    limit: p => ({beta: Math.round((1-p.alpha)*100)/100}),
+    prod: p => 'q = '+fmt(p.A)+'·K<sup>'+fmt(p.alpha)+'</sup>·L<sup>'+fmt(p.beta)+'</sup>',
+    costHTML: (p,C) => 'C(q) = F + ν·(q/A)<sup>1/ν</sup>·(r/α)<sup>α/ν</sup>·(w/β)<sup>β/ν</sup> = '+fmt(C.CF,1)+' + '+fmt(C.theta,3)+'·q'+(C.constMC?'':'<sup>'+fmt(C.e,3)+'</sup>'),
+    rts: p => { const nu=p.alpha+p.beta; return Math.abs(nu-1)<1e-9 ? 'Rendimientos constantes a escala (ν = 1): CMg constante' : 'Rendimientos decrecientes a escala (ν = '+fmt(nu,2)+'): CMg creciente'; }
+  },
+  cdcp: {
+    label:'Cobb-Douglas — corto plazo (K̄ fijo)',
+    params:[
+      {key:'A',     label:'Productividad total (A)',     min:0.5, max:4,   step:0.05},
+      {key:'alpha', label:'Elasticidad del capital (α)', min:0.1, max:0.9, step:0.05},
+      {key:'beta',  label:'Elasticidad del trabajo (β)', min:0.1, max:1,   step:0.05},
+      {key:'Kbar',  label:'Capital fijo (K̄)',            min:1,   max:60,  step:0.5},
+      {key:'F',     label:'Costo fijo adicional (F)',    min:0,   max:800, step:10}
+    ],
+    def:{A:1, alpha:0.5, beta:0.5, Kbar:25, F:0},
+    prod: p => 'q = '+fmt(p.A)+'·K̄<sup>'+fmt(p.alpha)+'</sup>·L<sup>'+fmt(p.beta)+'</sup>,  K̄ = '+fmt(p.Kbar,1),
+    costHTML: (p,C) => 'C(q) = r·K̄ + F + w·(q/(A·K̄<sup>α</sup>))<sup>1/β</sup> = '+fmt(C.CF,1)+' + '+fmt(C.k,4)+'·q'+(C.constMC?'':'<sup>'+fmt(C.e,3)+'</sup>'),
+    rts: p => p.beta>=1-1e-9 ? 'Corto plazo con PMg del trabajo constante (β = 1): CMg constante' : 'Corto plazo: PMg del trabajo decreciente (β < 1), CMg creciente'
+  },
+  cuad: {
+    label:'Costo cuadrático genérico',
+    params:[
+      {key:'c', label:'Componente lineal del CMg (c)', min:0, max:80, step:0.5},
+      {key:'d', label:'Pendiente del CMg (d)',         min:0, max:4,  step:0.05},
+      {key:'F', label:'Costo fijo (F)',                min:0, max:800, step:10}
+    ],
+    def:{c:20, d:0, F:0},
+    prod: () => 'Forma reducida: se especifica directamente C(q)',
+    costHTML: (p,C) => 'C(q) = F + c·q + (d/2)·q² = '+fmt(p.F,1)+' + '+fmt(p.c,2)+'·q + '+fmt(p.d/2,3)+'·q²',
+    rts: p => p.d>0 ? 'CMg creciente (d > 0)' : 'CMg constante (d = 0)'
+  }
+};
+const FAC = [
+  {key:'w', label:'Salario (w)',            min:1, max:30, step:0.5},
+  {key:'r', label:'Costo del capital (r)',  min:1, max:30, step:0.5}
+];
+const DEM = [
+  {key:'a1',    label:'Intercepto de demanda (a)',             min:20, max:300, step:1,    dec:0},
+  {key:'b',     label:'Pendiente propia (b)',                  min:0.2, max:4,  step:0.05, dec:2},
+  {key:'theta', label:'Grado de sustituibilidad (θ = g/b)',    min:0,  max:0.98, step:0.01, dec:2, diff:true},
+  {key:'a2',    label:'Intercepto de la firma 2 (a₂, calidad)', min:20, max:300, step:1,  dec:0, diff:true, asym:true}
+];
+
+/* ============================================================
+   2. ESTADO Y ESCENARIOS
+   ============================================================ */
+function firmDefaults(){ const o={tipo:'leontief', p:{}}; Object.keys(TECHS).forEach(k=>o.p[k]=Object.assign({},TECHS[k].def)); return o; }
+function baseCfg(){
+  return { homog:true, a1:100, a2:100, b:1, theta:0.5, sym:true, w:10, r:10, firms:[firmDefaults(), firmDefaults()] };
+}
+const PRESETS = {
+  base:    c => {},
+  asym:    c => { c.sym=false; c.firms[1].p.leontief = {kappa:1.5, lambda:1.5, F:0}; },
+  convex:  c => { c.firms.forEach(f=>f.tipo='cdcp'); },
+  diff:    c => { c.homog=false; c.theta=0.5; },
+  quality: c => { c.homog=false; c.theta=0.6; c.sym=false; c.a2=120; c.firms[0].tipo='cdlp'; c.firms[0].p.cdlp={A:1.5, alpha:0.4, beta:0.5, F:0}; },
+  close:   c => { c.homog=false; c.theta=0.95; }
+};
+const PRESET_VIEW = { base:{space:'q'}, asym:{space:'q'}, convex:{space:'q'}, diff:{space:'p'}, quality:{space:'q'}, close:{space:'p'} };
+
+const state = {
+  cfg: baseCfg(), preset:'base', space:'q',
+  show:{ r1:true, r2:true, iso:true, isomap:false, contract:false, pt:false, dev:false },
+  pts:{ cournot:true, stq:true, bert:true, stp:true, coll:true, comp:true },
+  isoAt:'cournot', metric:'W',
+  views:{ q:null, p:null }
+};
+function applyPreset(key){
+  const c = baseCfg(); PRESETS[key](c);
+  state.cfg = c; state.preset = key; state.views = {q:null, p:null};
+  state.space = (PRESET_VIEW[key]||{}).space || 'q';
+}
+
+/* Parámetros para el motor matemático. Con firmas simétricas la firma 2 copia a la 1. */
+function engineParams(){
+  const c = state.cfg;
+  const firm = i => { const f = c.firms[c.sym ? 0 : i]; return Object.assign({tipo:f.tipo}, f.p[f.tipo]); };
+  return { a1:c.a1, a2: (c.homog || c.sym) ? c.a1 : c.a2, b:c.b, theta: c.homog ? 1 : c.theta,
+           homog:c.homog, fac:{w:c.w, r:c.r}, sym:c.sym, firms:[firm(0), firm(1)] };
+}
+
+/* ============================================================
+   3. CONTROLES
+   ============================================================ */
+function decOf(step){ return step<0.01?3 : step<1?2 : 0; }
+function slider(container, id, label, min, max, step, value, dec, onInput){
+  const f = document.createElement('div'); f.className='field';
+  f.innerHTML = '<label for="'+id+'"><span class="lt">'+label+'</span> <span class="val" id="'+id+'-val">'+fmt(value,dec)+'</span></label>'+
+    '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+value+'">';
+  container.appendChild(f);
+  const inp = f.querySelector('input');
+  inp.addEventListener('input', ()=>{ const v=parseFloat(inp.value); el(id+'-val').textContent=fmt(v,dec); onInput(v); });
+  return {f, inp};
+}
+
+function renderDemand(){
+  const box = el('demParams'); box.innerHTML='';
+  const c = state.cfg;
+  DEM.forEach(pp=>{
+    if (pp.diff && c.homog) return;
+    if (pp.asym && c.sym) return;
+    slider(box, 'dem_'+pp.key, pp.label, pp.min, pp.max, pp.step, c[pp.key], pp.dec, v=>{ c[pp.key]=v; update(); });
+  });
+  document.querySelectorAll('#goodType button').forEach(b=>b.classList.toggle('on', (b.dataset.v==='homog')===c.homog));
+}
+el('goodType').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if (!b) return;
+  state.cfg.homog = b.dataset.v==='homog'; state.views={q:null,p:null};
+  renderDemand(); update();
+});
+
+const paramInputs = [{},{}];
+function renderFirm(i){
+  const c = state.cfg, f = c.firms[i];
+  const box = el('params'+i); box.innerHTML=''; paramInputs[i]={};
+  el('tech'+i).value = f.tipo;
+  const disabled = c.sym && i===1;
+  el('tech'+i).disabled = disabled;
+  if (disabled){ box.innerHTML=''; return; }
+  const T = TECHS[f.tipo], p = f.p[f.tipo];
+  T.params.forEach(pp=>{
+    const dec = decOf(pp.step);
+    const s = slider(box, 'prm'+i+'_'+pp.key, pp.label, pp.min, pp.max, pp.step, p[pp.key], dec, v=>{
+      p[pp.key]=v; applyLimits(i); update();
+    });
+    paramInputs[i][pp.key] = {inp:s.inp, f:s.f, pp, dec};
+  });
+  applyLimits(i);
+}
+function applyLimits(i){
+  const f = state.cfg.firms[i], T = TECHS[f.tipo], p = f.p[f.tipo];
+  const lim = T.limit ? T.limit(p) : {};
+  Object.keys(paramInputs[i]).forEach(k=>{
+    const o = paramInputs[i][k];
+    const max = lim[k]!==undefined ? Math.min(lim[k], o.pp.max) : o.pp.max;
+    o.inp.max = max;
+    if (p[k] > max) p[k] = max;
+    o.inp.value = p[k];
+    el('prm'+i+'_'+k+'-val').textContent = fmt(p[k], o.dec);
+    o.f.classList.toggle('limited', lim[k]!==undefined && p[k] >= max-1e-12);
+  });
+}
+[0,1].forEach(i=>{
+  const s = el('tech'+i);
+  Object.keys(TECHS).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=TECHS[k].label; s.appendChild(o); });
+  s.addEventListener('change', ()=>{ state.cfg.firms[i].tipo = s.value; renderFirm(i); state.views={q:null,p:null}; update(); });
+});
+el('symChk').addEventListener('change', ()=>{
+  const c = state.cfg; c.sym = el('symChk').checked;
+  if (!c.sym){ // al romper la simetría la firma 2 parte de la configuración de la firma 1
+    c.firms[1] = JSON.parse(JSON.stringify(c.firms[0])); c.a2 = c.a1;
+  }
+  syncControls(); update();
+});
+function renderFactors(){
+  const box = el('facParams'); box.innerHTML='';
+  FAC.forEach(pp=>slider(box, 'fac_'+pp.key, pp.label, pp.min, pp.max, pp.step, state.cfg[pp.key], 1, v=>{ state.cfg[pp.key]=v; update(); }));
+}
+function syncControls(){
+  el('preset').value = state.preset;
+  el('symChk').checked = state.cfg.sym;
+  renderDemand(); renderFirm(0); renderFirm(1); renderFactors();
+  el('symNote').style.display = state.cfg.sym ? '' : 'none';
+  el('symNote').innerHTML = 'Firmas simétricas: la firma 2 replica la tecnología y los parámetros de la firma 1. Desmarque «Firmas simétricas» para configurarla por separado.';
+  document.querySelectorAll('#spaceSeg button').forEach(b=>b.classList.toggle('on', b.dataset.v===state.space));
+  el('isoAt').value = state.isoAt; el('metric').value = state.metric;
+}
+el('preset').addEventListener('change', ()=>{ applyPreset(el('preset').value); syncControls(); update(); });
+el('resetBtn').addEventListener('click', ()=>{ applyPreset(state.preset); syncControls(); update(); });
+el('spaceSeg').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if (!b) return;
+  state.space = b.dataset.v; syncControls(); drawMain(); renderSpaceNote();
+});
+el('isoAt').addEventListener('change', ()=>{ state.isoAt = el('isoAt').value; state.show.iso = true; syncToggles(); drawMain(); });
+el('metric').addEventListener('change', ()=>{ state.metric = el('metric').value; drawBar(); });
+function syncToggles(){
+  document.querySelectorAll('#togCurves [data-k]').forEach(cb=>cb.checked=state.show[cb.dataset.k]);
+  document.querySelectorAll('#togCurves [data-m]').forEach(cb=>cb.checked=state.pts[cb.dataset.m]);
+}
+document.querySelectorAll('#togCurves [data-k]').forEach(cb=>cb.addEventListener('change',()=>{ state.show[cb.dataset.k]=cb.checked; drawMain(); }));
+document.querySelectorAll('#togCurves [data-m]').forEach(cb=>cb.addEventListener('change',()=>{ state.pts[cb.dataset.m]=cb.checked; drawMain(); }));
+
+/* Tema claro/oscuro: por defecto sigue al sistema; la elección explícita se recuerda
+   con localStorage (protegido con try/catch para iframes de Moodle). */
+const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+let theme = (mq && mq.matches) ? 'dark' : 'light';
+try{ const s = localStorage.getItem('duopolio-theme'); if (s==='dark'||s==='light'){ theme=s; document.documentElement.setAttribute('data-theme',s);} }catch(e){}
+function themeLabel(){ el('themeToggle').textContent = theme==='dark' ? 'Tema claro' : 'Tema oscuro'; }
+el('themeToggle').addEventListener('click', ()=>{
+  theme = theme==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+  try{ localStorage.setItem('duopolio-theme', theme); }catch(e){}
+  themeLabel(); drawAll(); paintLegendMarkers();
+});
+if (mq && mq.addEventListener) mq.addEventListener('change', ()=>{ if (!document.documentElement.getAttribute('data-theme')){ theme = mq.matches?'dark':'light'; themeLabel(); drawAll(); paintLegendMarkers(); } });
+themeLabel();
+
+/* ============================================================
+   4. INFRAESTRUCTURA DE GRÁFICOS: ZOOM Y DESPLAZAMIENTO
+   Cada espacio (cantidades / precios) guarda su ventana visible en
+   state.views[espacio], en unidades de datos. Con null se usa el ajuste
+   automático; al primer zoom o arrastre la ventana queda fija.
+   ============================================================ */
+function getVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+const FONT = '12px system-ui,-apple-system,"Segoe UI",sans-serif';
+
+const plot = { canvas: el('cvMain'), auto:null, rect:null, ratio:0.74 };
+plot.key = () => state.space;
+plot.view = () => state.views[plot.key()] || plot.auto;
+plot.clamp = v => {
+  const A=plot.auto, W0=A.x1-A.x0, H0=A.y1-A.y0;
+  let w=v.x1-v.x0, h=v.y1-v.y0;
+  const cx=(v.x0+v.x1)/2, cy=(v.y0+v.y1)/2;
+  w=Math.min(Math.max(w,W0/80),W0*8); h=Math.min(Math.max(h,H0/80),H0*8);
+  return {x0:cx-w/2, x1:cx+w/2, y0:cy-h/2, y1:cy+h/2};
+};
+plot.zoomAt = (px,py,fx,fy) => {
+  const v=plot.view(), R=plot.rect;
+  const dx = v.x0 + (px-R.x0)/(R.x1-R.x0)*(v.x1-v.x0);
+  const dy = v.y0 + (R.y1-py)/(R.y1-R.y0)*(v.y1-v.y0);
+  state.views[plot.key()] = plot.clamp({ x0:dx-(dx-v.x0)*fx, x1:dx+(v.x1-dx)*fx, y0:dy-(dy-v.y0)*fy, y1:dy+(v.y1-dy)*fy });
+  scheduleDraw();
+};
+(function bindPlot(){
+  const canvas = plot.canvas;
+  const zc = document.querySelector('.zoom-controls[data-plot="main"]');
+  plot.zoomLabel = zc.querySelector('.zoom-label');
+  zc.querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>{
+    const R=plot.rect, cx=(R.x0+R.x1)/2, cy=(R.y0+R.y1)/2;
+    if (b.dataset.z==='in') plot.zoomAt(cx,cy,0.8,0.8);
+    else if (b.dataset.z==='out') plot.zoomAt(cx,cy,1.25,1.25);
+    else { state.views[plot.key()]=null; drawMain(); }
+  }));
+  canvas.addEventListener('dblclick', ()=>{ state.views[plot.key()]=null; drawMain(); });
+  const localXY = e => { const b=canvas.getBoundingClientRect(); return [e.clientX-b.left, e.clientY-b.top]; };
+  canvas.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const [x,y]=localXY(e), f=Math.exp(e.deltaY*0.0015);
+    plot.zoomAt(x, y, e.altKey?1:f, e.shiftKey?1:f);
+  }, {passive:false});
+  const pointers=new Map(); let drag=null, pinch=null;
+  canvas.addEventListener('pointerdown', e=>{
+    pointers.set(e.pointerId, localXY(e));
+    try{ canvas.setPointerCapture(e.pointerId); }catch(err){}
+    if (pointers.size===1){ drag={xy:localXY(e), view:Object.assign({},plot.view())}; canvas.classList.add('dragging'); }
+    if (pointers.size===2){
+      const [p1,p2]=[...pointers.values()];
+      pinch={ d:Math.hypot(p1[0]-p2[0],p1[1]-p2[1]), view:Object.assign({},plot.view()), mid:[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2] };
+      drag=null;
+    }
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, localXY(e));
+    const R=plot.rect;
+    if (pointers.size===2 && pinch){
+      const [p1,p2]=[...pointers.values()];
+      const d=Math.hypot(p1[0]-p2[0],p1[1]-p2[1]); if (d<5) return;
+      const f=pinch.d/d, v=pinch.view, m=pinch.mid;
+      const dx=v.x0+(m[0]-R.x0)/(R.x1-R.x0)*(v.x1-v.x0), dy=v.y0+(R.y1-m[1])/(R.y1-R.y0)*(v.y1-v.y0);
+      state.views[plot.key()]=plot.clamp({x0:dx-(dx-v.x0)*f, x1:dx+(v.x1-dx)*f, y0:dy-(dy-v.y0)*f, y1:dy+(v.y1-dy)*f});
+      scheduleDraw();
+    } else if (drag){
+      const [x,y]=localXY(e), v=drag.view;
+      if (Math.abs(x-drag.xy[0])+Math.abs(y-drag.xy[1])<2 && !state.views[plot.key()]) return;
+      const sx=(v.x1-v.x0)/(R.x1-R.x0), sy=(v.y1-v.y0)/(R.y1-R.y0);
+      const ddx=-(x-drag.xy[0])*sx, ddy=(y-drag.xy[1])*sy;
+      state.views[plot.key()]={x0:v.x0+ddx, x1:v.x1+ddx, y0:v.y0+ddy, y1:v.y1+ddy};
+      scheduleDraw();
+    }
+  });
+  const end = e => { pointers.delete(e.pointerId); if (pointers.size<2) pinch=null; if (pointers.size===0){ drag=null; canvas.classList.remove('dragging'); } };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+})();
+let drawRaf=null;
+function scheduleDraw(){ if (drawRaf) return; drawRaf=requestAnimationFrame(()=>{ drawRaf=null; drawMain(); }); }
+
+function setupCanvas(canvas, ratio, minH, maxH){
+  const cssW = canvas.getBoundingClientRect().width || canvas.width;
+  const cssH = Math.max(minH||320, Math.min(cssW*ratio, maxH||760));
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.height = cssH+'px';
+  const tw=Math.round(cssW*dpr), th=Math.round(cssH*dpr);
+  if (canvas.width!==tw || canvas.height!==th){ canvas.width=tw; canvas.height=th; }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx, w:cssW, h:cssH};
+}
+function niceStep(range, n){
+  const raw=range/n, mag=Math.pow(10,Math.floor(Math.log10(raw))), nr=raw/mag;
+  return (nr<1.5?1:nr<3?2:nr<7?5:10)*mag;
+}
+/* Texto con subíndices (_X o _{XY}) y superíndices (^X), con halo para legibilidad. */
+function richText(ctx, str, x, y, color, align, base, bold){
+  const segs=[]; const re=/([_^])(\{[^}]*\}|[^\s_^=,()*]+)/g; let last=0, m;
+  while ((m=re.exec(str))){ if (m.index>last) segs.push({t:str.slice(last,m.index), k:0});
+    segs.push({t:m[2].replace(/[{}]/g,''), k:m[1]==='_'?1:-1}); last=re.lastIndex; }
+  if (last<str.length) segs.push({t:str.slice(last), k:0});
+  const fB=(bold?'600 ':'')+'12px system-ui,-apple-system,sans-serif', fS=(bold?'600 ':'')+'9.5px system-ui,-apple-system,sans-serif';
+  ctx.save(); ctx.textBaseline=base||'bottom'; ctx.textAlign='left';
+  let wTot=0; segs.forEach(sg=>{ ctx.font=sg.k?fS:fB; sg.w=ctx.measureText(sg.t).width; wTot+=sg.w; });
+  let cx = align==='right' ? x-wTot : (align==='center' ? x-wTot/2 : x);
+  const halo=getVar('--surface-1');
+  [0,1].forEach(pass=>{ let px=cx; segs.forEach(sg=>{
+    ctx.font=sg.k?fS:fB; const yy = y + (sg.k===1?4:(sg.k===-1?-5:0));
+    if (pass===0){ ctx.lineWidth=3.5; ctx.strokeStyle=halo; ctx.lineJoin='round'; ctx.strokeText(sg.t,px,yy); }
+    else { ctx.fillStyle=color; ctx.fillText(sg.t,px,yy); }
+    px+=sg.w; }); });
+  ctx.restore();
+  return wTot;
+}
+
+/* Marcadores de los equilibrios: la forma (no solo el color) distingue cada modelo. */
+const MODELS = {
+  cournot:{name:'Cournot (Nash en cantidades)', short:'N', col:'--m-cournot', shape:'circle', grp:'cournot'},
+  stq1:{name:'Stackelberg en cantidades — líder 1', short:'S_1', col:'--m-stq', shape:'tri', grp:'stq'},
+  stq2:{name:'Stackelberg en cantidades — líder 2', short:'S_2', col:'--m-stq', shape:'triDown', grp:'stq'},
+  bert:{name:'Bertrand (Nash en precios)', short:'B', col:'--m-bert', shape:'square', grp:'bert'},
+  stp1:{name:'Stackelberg en precios — líder 1', short:'P_1', col:'--m-stp', shape:'diamond', grp:'stp'},
+  stp2:{name:'Stackelberg en precios — líder 2', short:'P_2', col:'--m-stp', shape:'diamondH', grp:'stp'},
+  coll:{name:'Colusión (monopolio conjunto)', short:'M', col:'--m-coll', shape:'star', grp:'coll'},
+  comp:{name:'Competencia perfecta (p = CMg)', short:'C', col:'--m-comp', shape:'cross', grp:'comp'}
+};
+const ORDER = ['cournot','stq1','stq2','bert','stp1','stp2','coll','comp'];
+function markerPath(ctx, shape, x, y, r){
+  ctx.beginPath();
+  switch(shape){
+    case 'circle': ctx.arc(x,y,r,0,Math.PI*2); break;
+    case 'square': ctx.rect(x-r*0.85,y-r*0.85,r*1.7,r*1.7); break;
+    case 'tri': ctx.moveTo(x,y-r*1.15); ctx.lineTo(x+r,y+r*0.75); ctx.lineTo(x-r,y+r*0.75); ctx.closePath(); break;
+    case 'triDown': ctx.moveTo(x,y+r*1.15); ctx.lineTo(x+r,y-r*0.75); ctx.lineTo(x-r,y-r*0.75); ctx.closePath(); break;
+    case 'diamond': ctx.moveTo(x,y-r*1.2); ctx.lineTo(x+r,y); ctx.lineTo(x,y+r*1.2); ctx.lineTo(x-r,y); ctx.closePath(); break;
+    case 'diamondH': ctx.moveTo(x-r*1.2,y); ctx.lineTo(x,y-r*0.9); ctx.lineTo(x+r*1.2,y); ctx.lineTo(x,y+r*0.9); ctx.closePath(); break;
+    case 'star': for (let k=0;k<10;k++){ const a=-Math.PI/2+k*Math.PI/5, rr=k%2?r*0.5:r*1.3; k?ctx.lineTo(x+rr*Math.cos(a),y+rr*Math.sin(a)):ctx.moveTo(x+rr*Math.cos(a),y+rr*Math.sin(a)); } ctx.closePath(); break;
+    case 'cross': { const t=r*0.38; ctx.moveTo(x-t,y-r); ctx.lineTo(x+t,y-r); ctx.lineTo(x+t,y-t); ctx.lineTo(x+r,y-t); ctx.lineTo(x+r,y+t); ctx.lineTo(x+t,y+t);
+      ctx.lineTo(x+t,y+r); ctx.lineTo(x-t,y+r); ctx.lineTo(x-t,y+t); ctx.lineTo(x-r,y+t); ctx.lineTo(x-r,y-t); ctx.lineTo(x-t,y-t); ctx.closePath(); break; }
+  }
+}
+function drawMarker(ctx, key, x, y, r, hollow){
+  const m = MODELS[key]; const col = getVar(m.col);
+  ctx.save(); markerPath(ctx, m.shape, x, y, r||6);
+  if (hollow){ ctx.fillStyle=getVar('--surface-1'); ctx.fill(); ctx.strokeStyle=col; ctx.lineWidth=2; ctx.stroke(); }
+  else { ctx.fillStyle=col; ctx.fill(); ctx.strokeStyle=getVar('--surface-1'); ctx.lineWidth=1.8; ctx.stroke(); }
+  ctx.restore();
+}
+function markerSVG(key, size){
+  const m = MODELS[key], s=size||14, c=s/2, r=s*0.36;
+  // Se dibuja en un canvas temporal y se exporta como imagen (misma geometría que en el gráfico).
+  const cv = document.createElement('canvas'); const dpr=2; cv.width=s*dpr; cv.height=s*dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr,dpr); drawMarker(ctx, key, c, c, r);
+  return cv.toDataURL();
+}
+function paintLegendMarkers(){
+  document.querySelectorAll('svg.mk').forEach(svg=>{
+    const key = svg.dataset.mk; svg.setAttribute('viewBox','0 0 14 14');
+    svg.innerHTML = '<image href="'+markerSVG(key,14)+'" width="14" height="14"/>';
+  });
+}
+
+/* Marco de dibujo: ejes, grilla y transformaciones datos → píxeles. */
+function frame(xTitle, yTitle){
+  const {ctx,w,h} = setupCanvas(plot.canvas, plot.ratio, 340, 780);
+  const R = { x0:66, y0:16, x1:w-20, y1:h-48 }; plot.rect=R;
+  const V = plot.view();
+  const X = q => R.x0 + (q-V.x0)/(V.x1-V.x0)*(R.x1-R.x0);
+  const Y = v => R.y1 - (v-V.y0)/(V.y1-V.y0)*(R.y1-R.y0);
+  const cp = v => Math.max(-1e5, Math.min(1e5, v));
+  ctx.clearRect(0,0,w,h);
+  ctx.save(); ctx.font=FONT; ctx.lineWidth=1;
+  const xs=niceStep(V.x1-V.x0,8), ys=niceStep(V.y1-V.y0,7);
+  ctx.strokeStyle=getVar('--gridline'); ctx.fillStyle=getVar('--text-muted');
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for (let v=Math.ceil(V.y0/ys)*ys; v<=V.y1+1e-9; v+=ys){ const y=Y(v); ctx.beginPath(); ctx.moveTo(R.x0,y); ctx.lineTo(R.x1,y); ctx.stroke(); ctx.fillText(fmt(v, ys<1?(ys<0.1?2:1):0), R.x0-8, y); }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for (let v=Math.ceil(V.x0/xs)*xs; v<=V.x1+1e-9; v+=xs){ const x=X(v); ctx.beginPath(); ctx.moveTo(x,R.y0); ctx.lineTo(x,R.y1); ctx.stroke(); ctx.fillText(fmt(v, xs<1?(xs<0.1?2:1):0), x, R.y1+6); }
+  ctx.strokeStyle=getVar('--baseline'); ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(R.x0,R.y0); ctx.lineTo(R.x0,R.y1); ctx.lineTo(R.x1,R.y1); ctx.stroke();
+  if (V.x0<0 && V.x1>0){ ctx.beginPath(); ctx.moveTo(X(0),R.y0); ctx.lineTo(X(0),R.y1); ctx.stroke(); }
+  if (V.y0<0 && V.y1>0){ ctx.beginPath(); ctx.moveTo(R.x0,Y(0)); ctx.lineTo(R.x1,Y(0)); ctx.stroke(); }
+  ctx.restore();
+  richText(ctx, xTitle, (R.x0+R.x1)/2, R.y1+40, getVar('--text-secondary'), 'center', 'alphabetic');
+  ctx.save(); ctx.translate(16,(R.y0+R.y1)/2); ctx.rotate(-Math.PI/2); richText(ctx, yTitle, 0, 0, getVar('--text-secondary'), 'center', 'middle'); ctx.restore();
+
+  const G = { ctx, R, V, X, Y, cp, labels:[] };
+  G.clip = () => { ctx.save(); ctx.beginPath(); ctx.rect(R.x0,R.y0,R.x1-R.x0,R.y1-R.y0); ctx.clip(); };
+  G.unclip = () => ctx.restore();
+  G.inside = (x,y,pad) => x>=R.x0-(pad||0) && x<=R.x1+(pad||0) && y>=R.y0-(pad||0) && y<=R.y1+(pad||0);
+  // polilínea en coordenadas de datos; devuelve un punto visible para el rótulo
+  G.poly = (pts, color, width, dash, labelAt) => {
+    if (!pts || pts.length<2) return null;
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width||2.6; ctx.lineJoin='round'; ctx.lineCap='round';
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath(); let started=false; const vis=[];
+    for (const pt of pts){
+      if (!pt || !isFinite(pt[0]) || !isFinite(pt[1])){ started=false; continue; }
+      const x=cp(X(pt[0])), y=cp(Y(pt[1]));
+      if (!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+      if (G.inside(x,y,-6)) vis.push([x,y]);
+    }
+    ctx.stroke(); ctx.restore();
+    if (!vis.length) return null;
+    return vis[Math.min(vis.length-1, Math.floor(vis.length*(labelAt===undefined?0.9:labelAt)))];
+  };
+  G.segs = (segs, color, width, dash) => {
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width||1.4; if (dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    for (const s of segs){ ctx.moveTo(X(s[0][0]),Y(s[0][1])); ctx.lineTo(X(s[1][0]),Y(s[1][1])); }
+    ctx.stroke(); ctx.restore();
+  };
+  G.text = (str,x,y,color,align,base,bold) => richText(ctx, str, x, y, color, align, base, bold);
+  G.label = (pt, str, color) => { if (pt) G.labels.push({pt,str,color}); };
+  G.flushLabels = (avoid) => {
+    const placed=(avoid||[]).slice();
+    G.labels.forEach(L=>{
+      let x=L.pt[0]+8, align='left';
+      if (x > R.x1-125){ x=L.pt[0]-8; align='right'; }
+      let y=Math.min(Math.max(L.pt[1]-10, R.y0+10), R.y1-12);
+      for (let k=0;k<8;k++){ const hit=placed.find(p=>Math.abs(p.y-y)<15 && Math.abs(p.x-x)<80); if (!hit) break; y=hit.y+15; }
+      placed.push({x,y});
+      G.text(L.str, x, y, L.color, align, 'middle', true);
+    });
+  };
+  return G;
+}
+
+/* ============================================================
+   5. CÁLCULO
+   ============================================================ */
+let SOL=null, M=null, R=null, ST=null;
+
+function autoView(space){
+  const keys = Object.keys(R);
+  if (space==='q'){
+    let m = 0;
+    keys.forEach(k=>{ m=Math.max(m, R[k].q[0], R[k].q[1]); });
+    m = Math.max(m, D.brQ(M,0,0), D.brQ(M,1,0));
+    m = Math.max(m, 1e-3)*1.12;
+    return {x0:0, x1:m, y0:0, y1:m};
+  }
+  let m = 0;
+  keys.forEach(k=>{ m=Math.max(m, R[k].p[0], R[k].p[1]); });
+  m = Math.max(m, 1e-3)*1.3;
+  return {x0:0, x1:m, y0:0, y1:m};
+}
+
+/* ============================================================
+   6. DIBUJO DEL ESPACIO ESTRATÉGICO
+   ============================================================ */
+function drawMain(){
+  if (!R) return;
+  const sp = state.space, homogP = sp==='p' && M.homog;
+  plot.auto = autoView(sp);
+  el('plotTitle').textContent = sp==='q' ? 'Espacio de estrategias en cantidades (q₁, q₂)' : 'Espacio de estrategias en precios (p₁, p₂)';
+  el('lblStp').style.display = M.homog ? 'none' : '';
+  const G = frame(sp==='q' ? 'Cantidad de la firma 1 (q_1)' : 'Precio de la firma 1 (p_1)',
+                  sp==='q' ? 'Cantidad de la firma 2 (q_2)' : 'Precio de la firma 2 (p_2)');
+  const {V} = G, C = getVar, sh = state.show;
+  const c1 = C('--c-f1'), c2 = C('--c-f2');
+  const x0 = Math.max(0, V.x0), y0 = Math.max(0, V.y0);
+  G.clip();
+
+  // --- isobeneficios (curvas de nivel por marching squares sobre la ventana visible) ---
+  const prof = (i) => sp==='q' ? ((x,y)=>D.profitQ(M,i,[x,y])) : ((x,y)=>D.profitP(M,i,[x,y]));
+  const canIso = !homogP;
+  const N = 150;
+  if (canIso && sh.isomap){
+    [0,1].forEach(i=>{
+      const pm = D.monoProfit(M,i);
+      if (!(pm>0)) return;
+      [0.15,0.35,0.55,0.75,0.92].forEach(f=>{
+        G.segs(D.contour(prof(i), x0, V.x1, y0, V.y1, N, N, f*pm), i?c2:c1, 1, [2,3]);
+      });
+    });
+  }
+  if (canIso && sh.iso && R[state.isoAt]){
+    const o = R[state.isoAt];
+    [0,1].forEach(i=>{
+      if (sp==='q' && o.q[i]<=1e-9) return;
+      G.segs(D.contour(prof(i), x0, V.x1, y0, V.y1, N*1.4|0, N*1.4|0, o.pi[i]), i?c2:c1, 1.7, [7,4]);
+    });
+  }
+  // diagonal de precios iguales (bienes homogéneos) o de simetría
+  if (homogP || (sp==='q' && state.cfg.sym)){
+    G.poly([[Math.min(x0,y0),Math.min(x0,y0)],[Math.max(V.x1,V.y1),Math.max(V.x1,V.y1)]], C('--gridline'), 1.2, [4,4]);
+  }
+
+  // --- curva de contrato ---
+  if (sh.contract && sp==='q'){
+    const cc = D.contractCurve(M, 260);
+    G.label(G.poly(cc, C('--c-contract'), 2.4, null, 0.55), 'Curva de contrato', C('--c-contract'));
+  }
+  if (sh.contract && sp==='p' && !M.homog){
+    // El conjunto de asignaciones Pareto-eficientes para las firmas no depende de la variable con que se
+    // describa: se transforma la curva de contrato en cantidades mediante la demanda inversa.
+    const pts = D.contractCurve(M, 260).map(([x,y])=>[D.priceQ(M,0,x,y), D.priceQ(M,1,y,x)]);
+    G.label(G.poly(pts, C('--c-contract'), 2.4, null, 0.3), 'Curva de contrato', C('--c-contract'));
+  }
+
+  // --- ofertas precio-aceptantes p_i = CMg_i (se cruzan en el equilibrio competitivo) ---
+  if (sh.pt && sp==='q'){
+    const n=200, a=[], b=[];
+    for (let k=0;k<=n;k++){ const t=y0+(V.y1-y0)*k/n; a.push([D.ptQ(M,0,t), t]); }
+    for (let k=0;k<=n;k++){ const t=x0+(V.x1-x0)*k/n; b.push([t, D.ptQ(M,1,t)]); }
+    G.label(G.poly(a, c1, 1.8, [8,5], 0.55), 'p_1 = CMg_1', c1);
+    G.label(G.poly(b, c2, 1.8, [8,5], 0.55), 'p_2 = CMg_2', c2);
+  }
+  if (sh.pt && sp==='p'){
+    const ctx=G.ctx; ctx.save();
+    [0,1].forEach(i=>{
+      const pc = R.comp.p[i]; ctx.strokeStyle=i?c2:c1; ctx.lineWidth=1.6; ctx.setLineDash([8,5]); ctx.beginPath();
+      if (i===0){ ctx.moveTo(G.X(pc),G.R.y0); ctx.lineTo(G.X(pc),G.R.y1); } else { ctx.moveTo(G.R.x0,G.Y(pc)); ctx.lineTo(G.R.x1,G.Y(pc)); }
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  // --- funciones de reacción ---
+  if (sp==='q'){
+    const n = 260, a=[], b=[];
+    const yy1 = Math.max(V.y1, 1e-6), xx1 = Math.max(V.x1, 1e-6);
+    for (let k=0;k<=n;k++){ const t=y0+(yy1-y0)*k/n; a.push([D.brQ(M,0,t), t]); }
+    for (let k=0;k<=n;k++){ const t=x0+(xx1-x0)*k/n; b.push([t, D.brQ(M,1,t)]); }
+    if (sh.r1) G.label(G.poly(a, c1, 3, null, 0.12), 'R_1(q_2)', c1);
+    if (sh.r2) G.label(G.poly(b, c2, 3, null, 0.06), 'R_2(q_1)', c2);
+  } else if (!M.homog){
+    const n = 200, a=[], b=[];
+    for (let k=0;k<=n;k++){ const t=y0+(V.y1-y0)*k/n; a.push([D.brP(M,0,t), t]); }
+    for (let k=0;k<=n;k++){ const t=x0+(V.x1-x0)*k/n; b.push([t, D.brP(M,1,t)]); }
+    if (sh.r1) G.label(G.poly(a, c1, 3, null, 0.9), 'R_1(p_2)', c1);
+    if (sh.r2) G.label(G.poly(b, c2, 3, null, 0.9), 'R_2(p_1)', c2);
+  } else if (M.C[0].constMC && M.C[1].constMC){
+    // Bertrand homogéneo con CMg constantes: correspondencias de mejor respuesta discontinuas.
+    // R_i(p_j) = c_i (cualquier p_i ≥ p_j) si p_j ≤ c_i;  p_j − ε si c_i < p_j ≤ p^m_i;  p^m_i si p_j > p^m_i.
+    const big = Math.max(V.x1, V.y1)*2;
+    const seq = i => { const ci=M.C[i].c, pm=Math.max((M.a[0]+ci)/2, ci); return [[0,ci],[ci,ci],[pm,pm],[big,pm]]; }; // pares (p_j, p_i)
+    if (sh.r1) G.label(G.poly(seq(0).map(([pj,pi])=>[pi,pj]), c1, 3, null, 0.95), 'R_1(p_2)', c1);
+    if (sh.r2) G.label(G.poly(seq(1), c2, 2.4, [9,6], 0.95), 'R_2(p_1)', c2);
+  }
+
+  // --- desvíos del cártel ---
+  if (sh.dev && ST){
+    const ctx=G.ctx;
+    [0,1].forEach(i=>{
+      const s = sp==='q' ? ST.q[i] : ST.p[i]; if (!s) return;
+      const from = sp==='q' ? R.coll.q : R.coll.p;
+      const to = sp==='q' ? s.qDev : s.pDev;
+      const xA=G.X(from[0]), yA=G.Y(from[1]), xB=G.X(to[0]), yB=G.Y(to[1]);
+      ctx.save(); ctx.strokeStyle=C('--m-dev'); ctx.lineWidth=1.6; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(xA,yA); ctx.lineTo(xB,yB); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle=getVar('--surface-1'); ctx.strokeStyle=C('--m-dev'); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(xB,yB,5,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore();
+      G.text('D_'+(i+1), xB+8, yB+12, C('--m-dev'), 'left', 'middle', true);
+    });
+  }
+
+  // --- equilibrios ---
+  const placed=[];
+  const showKey = k => R[k] && state.pts[MODELS[k].grp];
+  const drawn=[];
+  ORDER.forEach(k=>{
+    if (!showKey(k)) return;
+    const o = R[k], v = sp==='q' ? o.q : o.p;
+    const x=G.X(v[0]), y=G.Y(v[1]);
+    drawn.push({k,x,y});
+  });
+  // guías punteadas a los ejes para el equilibrio seleccionado en las isobeneficio
+  drawn.forEach(d=>{
+    if (d.k!==state.isoAt) return;
+    const ctx=G.ctx; ctx.save(); ctx.strokeStyle=C(MODELS[d.k].col); ctx.globalAlpha=0.55; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(d.x,d.y); ctx.lineTo(d.x,G.R.y1); ctx.moveTo(d.x,d.y); ctx.lineTo(G.R.x0,d.y); ctx.stroke(); ctx.restore();
+  });
+  drawn.forEach(d=>drawMarker(G.ctx, d.k, d.x, d.y, d.k===state.isoAt?7:6));
+  // rótulos de los equilibrios, evitando superposiciones
+  drawn.forEach(d=>{
+    if (!G.inside(d.x,d.y,-2)) return;
+    let lx=d.x+10, ly=d.y-10;
+    for (let k=0;k<10;k++){
+      const hit = placed.find(p=>Math.abs(p.x-lx)<26 && Math.abs(p.y-ly)<14);
+      if (!hit) break;
+      ly += (k%2? -1: 1)*15*(k+1)/2|0; if (k===5) lx = d.x-28;
+    }
+    placed.push({x:lx,y:ly});
+    G.text(MODELS[d.k].short, lx, ly, C(MODELS[d.k].col), 'left', 'middle', true);
+  });
+  G.flushLabels(placed);
+  G.unclip();
+  if (plot.zoomLabel){ const A=plot.auto, Vv=plot.view(); plot.zoomLabel.textContent=Math.round(100*(A.x1-A.x0)/(Vv.x1-Vv.x0))+'%'; }
+}
+
+/* ============================================================
+   7. GRÁFICO DE BARRAS DE COMPARACIÓN
+   ============================================================ */
+function metricVal(o, m){ return m==='pi0' ? o.pi[0] : m==='pi1' ? o.pi[1] : o[m]; }
+function drawBar(){
+  if (!R) return;
+  const canvas = el('cvBar');
+  const keys = ORDER.filter(k=>R[k]);
+  const {ctx,w,h} = setupCanvas(canvas, 0.62, 300, 460);
+  const Rr = {x0:Math.min(250, w*0.42), y0:12, x1:w-64, y1:h-30};
+  ctx.clearRect(0,0,w,h);
+  const m = state.metric, vals = keys.map(k=>metricVal(R[k],m));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  if (hi-lo < 1e-9) hi = lo+1;
+  const X = v => Rr.x0 + (v-lo)/(hi-lo)*(Rr.x1-Rr.x0);
+  const rowH = (Rr.y1-Rr.y0)/keys.length;
+  ctx.font=FONT;
+  const st = niceStep(hi-lo, 5);
+  ctx.strokeStyle=getVar('--gridline'); ctx.fillStyle=getVar('--text-muted'); ctx.textAlign='center'; ctx.textBaseline='top'; ctx.lineWidth=1;
+  for (let v=Math.ceil(lo/st)*st; v<=hi+1e-9; v+=st){ const x=X(v); ctx.beginPath(); ctx.moveTo(x,Rr.y0); ctx.lineTo(x,Rr.y1); ctx.stroke(); ctx.fillText(fmt(v, st<1?2:0), x, Rr.y1+6); }
+  ctx.strokeStyle=getVar('--baseline'); ctx.lineWidth=1.3; ctx.beginPath(); ctx.moveTo(X(0),Rr.y0); ctx.lineTo(X(0),Rr.y1); ctx.stroke();
+  keys.forEach((k,i)=>{
+    const v = vals[i], yc = Rr.y0 + rowH*(i+0.5), bh = Math.min(22, rowH*0.62);
+    const col = getVar(MODELS[k].col);
+    ctx.fillStyle = col; ctx.globalAlpha = 0.85;
+    const xa = X(Math.min(0,v)), xb = X(Math.max(0,v));
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(xa, yc-bh/2, Math.max(1,xb-xa), bh, 3) : ctx.rect(xa, yc-bh/2, Math.max(1,xb-xa), bh); ctx.fill();
+    ctx.globalAlpha = 1;
+    drawMarker(ctx, k, 10, yc, 5);
+    ctx.fillStyle=getVar('--text-secondary'); ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.font=FONT;
+    let name = MODELS[k].name; while (ctx.measureText(name).width > Rr.x0-30 && name.length>8) name = name.slice(0,-2);
+    if (name!==MODELS[k].name) name = name.trim()+'…';
+    ctx.fillText(name, 22, yc);
+    ctx.fillStyle=getVar('--text-primary'); ctx.font='600 12px system-ui,sans-serif';
+    ctx.textAlign = v>=0 ? 'left' : 'right';
+    ctx.fillText(fmt(v, m==='HHI'?0:(Math.abs(v)<100?2:1)), v>=0 ? xb+6 : xa-6, yc);
+  });
+}
+
+/* ============================================================
+   8. TABLAS, NOTAS Y DERIVACIÓN
+   ============================================================ */
+function markerImg(k){ return '<img src="'+markerSVG(k,14)+'" width="14" height="14" alt="">'; }
+function renderTable(){
+  const homog = M.homog;
+  el('tableHint').innerHTML = 'Beneficios netos de costos fijos. EC = U(q) − Σ p<sub>i</sub>q<sub>i</sub> (excedente del consumidor de la utilidad cuadrática que genera la demanda); W = EC + π<sub>1</sub> + π<sub>2</sub>; PIE = W<sup>C</sup> − W, medida respecto de la asignación de competencia perfecta. Índice de Lerner L<sub>i</sub> = (p<sub>i</sub> − CMg<sub>i</sub>)/p<sub>i</sub>; HHI sobre participaciones en cantidades.'+
+    (homog ? '' : ' Con bienes diferenciados la cantidad total suma unidades de bienes distintos y el HHI es solo indicativo.');
+  let h = '<thead><tr><th>Modelo</th><th class="f1">q₁</th><th class="f2">q₂</th><th>Q</th><th class="f1">p₁</th><th class="f2">p₂</th>'+
+          '<th class="f1">π₁</th><th class="f2">π₂</th><th>Π</th><th>EC</th><th>W</th><th>PIE</th><th class="f1">L₁</th><th class="f2">L₂</th><th>HHI</th></tr></thead><tbody>';
+  ORDER.forEach(k=>{
+    const o = R[k]; if (!o) return;
+    const cell = (v,d) => '<td'+(v<-1e-9?' class="neg"':'')+'>'+fmt(v,d)+'</td>';
+    h += '<tr><td><span class="mrk">'+markerImg(k)+MODELS[k].name+(k==='bert' && o.caso==='dastidar'?' *':'')+'</span></td>'+
+      cell(o.q[0],2)+cell(o.q[1],2)+cell(o.Q,2)+cell(o.p[0],2)+cell(o.p[1],2)+
+      cell(o.pi[0],1)+cell(o.pi[1],1)+cell(o.Pi,1)+cell(o.CS,1)+cell(o.W,1)+cell(o.PIE,1)+
+      '<td>'+(o.lern[0]===null?'—':fmt(o.lern[0],3))+'</td><td>'+(o.lern[1]===null?'—':fmt(o.lern[1],3))+'</td><td>'+fmt(o.HHI,0)+'</td></tr>';
+  });
+  el('resTable').innerHTML = h+'</tbody>';
+}
+
+function renderBertNote(){
+  const b = R.bert, n = el('bertNote');
+  if (!M.homog){
+    n.className='note';
+    n.innerHTML = '<b>Bertrand con productos diferenciados.</b> Cada firma enfrenta una demanda directa q<sub>i</sub>(p<sub>i</sub>, p<sub>j</sub>) continua: bajar el precio no captura todo el mercado, por lo que el equilibrio tiene márgenes positivos (L<sub>1</sub> = '+fmt(b.lern[0],3)+', L<sub>2</sub> = '+fmt(b.lern[1],3)+
+      '). Los precios son <i>complementos estratégicos</i> (funciones de reacción con pendiente positiva) y las cantidades, <i>sustitutos estratégicos</i>; por eso p<sup>Bertrand</sup> &lt; p<sup>Cournot</sup> y, en Stackelberg en precios, el seguidor obtiene más beneficio que el líder (ventaja del segundo jugador).';
+    return;
+  }
+  if (b.caso==='simetrico'){
+    n.className='note warn';
+    n.innerHTML = '<b>Paradoja de Bertrand.</b> Con bien homogéneo y CMg constantes e iguales (c = '+fmt(M.C[0].c,2)+'), cualquier precio por encima de c invita a que la rival lo rebaje marginalmente y capture toda la demanda. El único equilibrio de Nash es p<sub>1</sub> = p<sub>2</sub> = c: dos firmas bastan para reproducir el resultado competitivo, con beneficios iguales a −F.';
+  } else if (b.caso==='limite' || b.caso==='monopolio'){
+    const L = b.lider, cl = M.C[L].c, ch = M.C[1-L].c, pm = (M.a[0]+cl)/2;
+    n.className='note warn';
+    n.innerHTML = b.caso==='limite'
+      ? '<b>Bertrand con costos asimétricos (precio límite).</b> La firma '+(L+1)+' (c = '+fmt(cl,2)+') fija p = c<sub>'+(2-L)+'</sub> − ε ≈ '+fmt(ch,2)+' y abastece todo el mercado; la firma rival no puede vender sin pérdidas. El equilibrio se construye en estrategias débilmente dominadas (la firma de mayor costo cobra su CMg) y el precio queda por debajo del de monopolio de la firma eficiente ('+fmt(pm,2)+').'
+      : '<b>Bertrand con costos muy asimétricos.</b> El precio de monopolio de la firma '+(L+1)+' ('+fmt(pm,2)+') es inferior al CMg de la rival ('+fmt(ch,2)+'): la firma eficiente actúa como monopolista no amenazada.';
+  } else {
+    n.className='note flag';
+    n.innerHTML = '<b>* Bertrand con bien homogéneo y CMg creciente.</b> El juego en precios no tiene un equilibrio único: con regla de reparto igualitario existe un continuo de precios de equilibrio (Dastidar, 1995) y, si las firmas deben abastecer toda la demanda que reciben, puede no existir equilibrio en estrategias puras. Como referencia se informa el resultado con p = CMg (firmas tomadoras de precios), que es el límite del Bertrand diferenciado cuando θ → 1. Explore el caso con «Bienes diferenciados» y θ cercano a 1.';
+  }
+}
+
+function renderRank(){
+  const n = el('rankNote');
+  const o = R;
+  const items = [];
+  items.push('<b>Cantidades totales:</b> Q<sup>M</sup> = '+fmt(o.coll.Q,2)+' ≤ Q<sup>N</sup> = '+fmt(o.cournot.Q,2)+' ≤ Q<sup>S</sup> = '+fmt(o.stq1.Q,2)+' (líder 1) / '+fmt(o.stq2.Q,2)+' (líder 2) ≤ Q<sup>C</sup> = '+fmt(o.comp.Q,2)+'.');
+  const adv1 = o.stq1.pi[0]-o.cournot.pi[0], adv2 = o.stq2.pi[1]-o.cournot.pi[1];
+  items.push('<b>Ventaja del primer jugador (cantidades):</b> como líder, la firma 1 gana '+fmt(adv1,1)+' respecto de Cournot y la firma 2 gana '+fmt(adv2,1)+'. El líder se compromete a una cantidad mayor sobre la función de reacción de la rival (tangencia entre su isobeneficio y R<sub>j</sub>).');
+  if (!M.homog){
+    const f1 = o.stp1.pi[1]-o.stp1.pi[0];
+    items.push('<b>Stackelberg en precios:</b> con líder 1, π<sub>seguidor</sub> − π<sub>líder</sub> = '+fmt(f1,1)+(f1>0?' > 0 (ventaja del segundo jugador).':'.')+' Ambos ganan respecto de Bertrand: el líder sube el precio y el seguidor responde subiendo el suyo, pero menos.');
+  }
+  const gainN = [o.coll.pi[0]-o.cournot.pi[0], o.coll.pi[1]-o.cournot.pi[1]];
+  items.push('<b>Colusión:</b> el beneficio conjunto aumenta de Π<sup>N</sup> = '+fmt(o.cournot.Pi,1)+' a Π<sup>M</sup> = '+fmt(o.coll.Pi,1)+'. '+
+    ((gainN[0]<-1e-6||gainN[1]<-1e-6) ? 'Sin transferencias laterales, la firma '+(gainN[0]<gainN[1]?1:2)+' obtendría menos que en Cournot: el monopolio conjunto eficiente concentra la producción en la firma de menor costo y solo es sostenible con pagos compensatorios.' :
+     'Ambas firmas ganan respecto de Cournot, pero cada una tiene incentivo a desviarse (punto sobre su función de reacción): el cártel no es un equilibrio de Nash del juego de una etapa.'));
+  items.push('<b>Bienestar:</b> PIE de Cournot = '+fmt(o.cournot.PIE,1)+'; de Bertrand = '+fmt(o.bert.PIE,1)+'; de la colusión = '+fmt(o.coll.PIE,1)+'.');
+  n.className='note'; n.innerHTML = '<ul><li>'+items.join('</li><li>')+'</li></ul>';
+}
+
+function renderStability(){
+  const rows = [];
+  const fmtD = s => !s ? '—' : (s.excl ? 'no participa' : fmt(s.delta,3));
+  const add = (lab, arr, punish) => {
+    rows.push('<tr><td>'+lab+'</td>'+[0,1].map(i=>{ const s=arr[i]; return '<td>'+(s?fmt(s.piC,1):'—')+'</td><td>'+(s?fmt(s.piD,1):'—')+'</td><td>'+(s?fmt(s.piN,1):'—')+'</td><td><b>'+fmtD(s)+'</b></td>'; }).join('')+'</tr>');
+  };
+  add('Desvío en cantidades, castigo Cournot', ST.q);
+  add('Desvío en precios, castigo Bertrand', ST.p);
+  el('stabTable').innerHTML = '<thead><tr><th>Juego de etapa</th><th class="f1">π₁ᴹ</th><th class="f1">π₁ᴰ</th><th class="f1">π₁ᴺ</th><th class="f1">δ₁*</th><th class="f2">π₂ᴹ</th><th class="f2">π₂ᴰ</th><th class="f2">π₂ᴺ</th><th class="f2">δ₂*</th></tr></thead><tbody>'+rows.join('')+'</tbody>';
+  // umbral del juego: δ* = máx_i δ*_i; si alguna firma no participa o δ* ≥ 1, el cártel sin transferencias no es sostenible
+  const thr = arr => { if (arr.some(s=>!s)) return null; if (arr.some(s=>s.excl)) return 'excl'; const d=Math.max(arr[0].delta, arr[1].delta); return d>=1-1e-9 ? 'never' : d; };
+  const tq = thr(ST.q), tp = thr(ST.p);
+  const desc = (lab, v) => v===null ? '' : v==='excl' ? lab+' el cártel eficiente no es aceptable para ambas firmas sin transferencias. ' :
+    v==='never' ? lab+' la colusión no es sostenible para ningún δ < 1 (alguna firma obtiene en el cártel lo mismo que en el equilibrio de Nash y gana desviándose). ' :
+    lab+' la colusión se sostiene si δ ≥ '+fmt(v,3)+'. ';
+  let t = desc('Con competencia en cantidades', tq) + desc('Con competencia en precios', tp);
+  const mx = v => v;
+  if (typeof tq==='number' && typeof tp==='number') t += tp<tq ? 'El castigo de Bertrand es más severo, por lo que la colusión resulta más fácil de sostener pese a que el desvío es más rentable.' : 'Aquí el desvío en precios es tan rentable que la colusión resulta más difícil de sostener que bajo competencia en cantidades.';
+  if (M.homog && R.bert.caso==='simetrico') t += ' Caso clásico: con CMg constantes iguales, δ* = 9/17 ≈ 0,529 (Cournot) y δ* = 1/2 (Bertrand).';
+  if (ST.q.some(s=>s && s.excl)) t += ' «No participa»: la firma obtiene en el cártel menos que en el equilibrio de Nash, por lo que no acepta el acuerdo sin transferencias.';
+  if (!ST.p[0]) t += ' Con bien homogéneo y CMg creciente el castigo de Bertrand no está bien definido (véase la nota sobre Dastidar).';
+  el('stabNote').className='note'; el('stabNote').innerHTML = t;
+}
+
+function renderSpaceNote(){
+  const n = el('spaceNote'), sp = state.space;
+  let t = '';
+  if (sp==='q'){
+    const sl = [0,1].map(i=>{ const j=1-i; const a=D.brQ(M,i,R.cournot.q[j]+1e-4), b=D.brQ(M,i,Math.max(0,R.cournot.q[j]-1e-4)); return (a-b)/2e-4; });
+    t = '<b>Espacio de cantidades.</b> El equilibrio de Cournot (N) es la intersección de las funciones de reacción; allí la isobeneficio de cada firma es horizontal (firma 1) o vertical (firma 2) respecto de su propia variable. '+
+      'Pendientes de las funciones de reacción en N: dR<sub>1</sub>/dq<sub>2</sub> = '+fmt(sl[0],3)+', dR<sub>2</sub>/dq<sub>1</sub> = '+fmt(sl[1],3)+' (sustitutos estratégicos; con demanda lineal, −g/(2b + CMg′)). '+
+      'Stackelberg (S<sub>i</sub>) es la tangencia entre la isobeneficio del líder y la función de reacción del seguidor; la colusión (M) está sobre la curva de contrato, donde las isobeneficio de ambas firmas son tangentes entre sí.';
+    if (M.g<1e-9) t += ' Con θ = 0 los mercados son independientes: las funciones de reacción son rectas verticales y horizontales y todos los modelos estratégicos coinciden con el monopolio de cada firma.';
+  } else if (!M.homog){
+    t = '<b>Espacio de precios.</b> Las funciones de reacción en precios tienen pendiente positiva (complementos estratégicos). Bertrand (B) es su intersección; con bienes diferenciados, cada isobeneficio de la firma 1 alcanza su mínimo p<sub>2</sub> sobre R<sub>1</sub>. '+
+      'Los puntos de los modelos en cantidades (N, S, M, C) se ubican en este espacio a través de la demanda inversa p<sub>i</sub> = a<sub>i</sub> − b q<sub>i</sub> − g q<sub>j</sub>.';
+  } else {
+    t = '<b>Espacio de precios con bien homogéneo.</b> La demanda de cada firma es discontinua (la de menor precio se queda con todo el mercado), por lo que las isobeneficio no son curvas suaves y no se dibujan. '+
+      (M.C[0].constMC && M.C[1].constMC ? 'Las mejores respuestas son correspondencias escalonadas: igualar o rebajar marginalmente el precio rival mientras supere el propio CMg, y cobrar el precio de monopolio si el rival está por encima de él. Su intersección es el equilibrio de Bertrand sobre la diagonal p<sub>1</sub> = p<sub>2</sub>.' :
+       'Con CMg creciente las mejores respuestas no están bien definidas (véase la nota de Bertrand).');
+  }
+  n.className='note'; n.innerHTML = t;
+}
+
+function mcHTML(tipo, p, Ci){
+  if (Ci.constMC) return fmt(Ci.c,2);
+  if (tipo==='cuad') return fmt(p.c,2)+' + '+fmt(p.d,2)+'·q';
+  const k = tipo==='cdlp' ? Ci.theta : Ci.k;
+  return fmt(k*Ci.e,4)+'·q<sup>'+fmt(Ci.e-1,3)+'</sup>';
+}
+function renderFirmInfo(){
+  const c = state.cfg, fac={w:c.w,r:c.r};
+  [0,1].forEach(i=>{
+    const f = c.firms[c.sym?0:i], T = TECHS[f.tipo], p = f.p[f.tipo], Ci = M.C[i];
+    el('prod'+i).innerHTML = '<b>Producción:</b> '+T.prod(p);
+    el('cost'+i).innerHTML = '<b>Costo:</b> '+T.costHTML(p,Ci,fac)+'<br><b>Costo marginal:</b> CMg<sub>'+(i+1)+'</sub>(q) = '+mcHTML(f.tipo,p,Ci);
+    el('rts'+i).textContent = T.rts(p);
+  });
+  const a2 = (c.homog||c.sym) ? c.a1 : c.a2;
+  el('demandFormula').innerHTML = c.homog
+    ? '<b>Demanda inversa:</b> P = '+fmt(c.a1,0)+' − '+fmt(c.b,2)+'·(q<sub>1</sub> + q<sub>2</sub>)'
+    : '<b>Demandas inversas:</b> p<sub>1</sub> = '+fmt(c.a1,0)+' − '+fmt(c.b,2)+'·q<sub>1</sub> − '+fmt(c.theta*c.b,3)+'·q<sub>2</sub>; &nbsp; p<sub>2</sub> = '+fmt(a2,0)+' − '+fmt(c.b,2)+'·q<sub>2</sub> − '+fmt(c.theta*c.b,3)+'·q<sub>1</sub>'+
+      '<br><b>Utilidad cuadrática:</b> U = a<sub>1</sub>q<sub>1</sub> + a<sub>2</sub>q<sub>2</sub> − ½(b q<sub>1</sub>² + 2g q<sub>1</sub>q<sub>2</sub> + b q<sub>2</sub>²) + m, g = θb';
+}
+
+function renderDerivation(){
+  const a = M.a, b = M.b, g = M.g, Cc = M.C, homog = M.homog;
+  const cm = i => Cc[i].constMC ? fmt(Cc[i].c,3) : 'CMg<sub>'+(i+1)+'</sub>(q<sub>'+(i+1)+'</sub>)';
+  let s = '';
+  s += '<h4>1. Demanda y costos</h4>';
+  s += '<p>La demanda proviene de un consumidor representativo con utilidad cuadrática U(q<sub>1</sub>, q<sub>2</sub>) = a<sub>1</sub>q<sub>1</sub> + a<sub>2</sub>q<sub>2</sub> − ½(b q<sub>1</sub>² + 2g q<sub>1</sub>q<sub>2</sub> + b q<sub>2</sub>²) + m. Las CPO ∂U/∂q<sub>i</sub> = p<sub>i</sub> generan las demandas inversas</p>';
+  s += '<span class="eq">p<sub>i</sub> = a<sub>i</sub> − b q<sub>i</sub> − g q<sub>j</sub>,   a = ('+fmt(a[0],1)+', '+fmt(a[1],1)+'),  b = '+fmt(b,3)+',  g = θb = '+fmt(g,3)+'</span>';
+  s += '<p>Con g = b y a<sub>1</sub> = a<sub>2</sub> los bienes son homogéneos (P = a − bQ); con g = 0, independientes. Para g &lt; b se invierte el sistema y se obtienen las demandas directas</p>';
+  s += '<span class="eq">q<sub>i</sub>(p<sub>i</sub>, p<sub>j</sub>) = [b(a<sub>i</sub> − p<sub>i</sub>) − g(a<sub>j</sub> − p<sub>j</sub>)] / (b² − g²)</span>';
+  s += '<p>Los costos son duales de min wL + rK s.a. f(K, L) = q: '+TECHS[(state.cfg.firms[0]).tipo].costHTML(state.cfg.firms[0].p[state.cfg.firms[0].tipo], Cc[0]).replace('C(q)','C<sub>1</sub>(q)')+
+       '; &nbsp; '+TECHS[(state.cfg.firms[state.cfg.sym?0:1]).tipo].costHTML(state.cfg.firms[state.cfg.sym?0:1].p[state.cfg.firms[state.cfg.sym?0:1].tipo], Cc[1]).replace('C(q)','C<sub>2</sub>(q)')+
+       '. Se exige CMg no decreciente (rendimientos no crecientes): así π<sub>i</sub> es estrictamente cóncava en la variable propia y las funciones de reacción están bien definidas.</p>';
+
+  s += '<h4>2. Cournot: equilibrio de Nash en cantidades</h4>';
+  s += '<span class="eq">max<sub>q<sub>i</sub></sub> π<sub>i</sub> = (a<sub>i</sub> − b q<sub>i</sub> − g q<sub>j</sub>) q<sub>i</sub> − C<sub>i</sub>(q<sub>i</sub>)   ⇒   ∂π<sub>i</sub>/∂q<sub>i</sub> = a<sub>i</sub> − 2b q<sub>i</sub> − g q<sub>j</sub> − CMg<sub>i</sub>(q<sub>i</sub>) = 0</span>';
+  s += '<p>CSO: ∂²π<sub>i</sub>/∂q<sub>i</sub>² = −2b − CMg<sub>i</sub>′ &lt; 0. La CPO define la función de reacción R<sub>i</sub>(q<sub>j</sub>), con pendiente dR<sub>i</sub>/dq<sub>j</sub> = −g/(2b + CMg<sub>i</sub>′) ∈ (−½, 0]: las cantidades son sustitutos estratégicos y la pendiente menor que 1 en valor absoluto garantiza unicidad y estabilidad.'+
+       (Cc[0].constMC && Cc[1].constMC ? ' Con CMg constantes:' : '')+'</p>';
+  if (Cc[0].constMC && Cc[1].constMC){
+    s += '<span class="eq">R<sub>i</sub>(q<sub>j</sub>) = (a<sub>i</sub> − c<sub>i</sub> − g q<sub>j</sub>)/(2b)   ⇒   q<sub>i</sub><sup>N</sup> = [2b(a<sub>i</sub> − c<sub>i</sub>) − g(a<sub>j</sub> − c<sub>j</sub>)] / (4b² − g²)</span>';
+  }
+  s += '<span class="eq">q<sup>N</sup> = ('+fmt(R.cournot.q[0],3)+', '+fmt(R.cournot.q[1],3)+'),   p<sup>N</sup> = ('+fmt(R.cournot.p[0],3)+', '+fmt(R.cournot.p[1],3)+'),   π<sup>N</sup> = ('+fmt(R.cournot.pi[0],2)+', '+fmt(R.cournot.pi[1],2)+')</span>';
+  s += '<p>Regla de Lerner en Cournot (bien homogéneo): (P − CMg<sub>i</sub>)/P = s<sub>i</sub>/|ε|, con s<sub>i</sub> la participación de mercado y |ε| el valor absoluto de la elasticidad-precio de la demanda.</p>';
+
+  s += '<h4>3. Stackelberg en cantidades (inducción hacia atrás)</h4>';
+  s += '<p>El seguidor j responde con R<sub>j</sub>(q<sub>L</sub>); el líder internaliza esa respuesta:</p>';
+  s += '<span class="eq">max<sub>q<sub>L</sub></sub> π<sub>L</sub>(q<sub>L</sub>, R<sub>j</sub>(q<sub>L</sub>))   ⇒   a<sub>L</sub> − 2b q<sub>L</sub> − g R<sub>j</sub> − g q<sub>L</sub> R<sub>j</sub>′(q<sub>L</sub>) − CMg<sub>L</sub> = 0</span>';
+  s += '<p>El término −g q<sub>L</sub> R<sub>j</sub>′ &gt; 0 es el efecto estratégico: al expandirse, el líder induce al seguidor a contraerse. Geométricamente, la isobeneficio del líder es tangente a R<sub>j</sub>. Resultados: líder 1 → q = ('+fmt(R.stq1.q[0],3)+', '+fmt(R.stq1.q[1],3)+'); líder 2 → q = ('+fmt(R.stq2.q[0],3)+', '+fmt(R.stq2.q[1],3)+').</p>';
+
+  s += '<h4>4. Bertrand: equilibrio de Nash en precios</h4>';
+  if (!homog){
+    s += '<span class="eq">max<sub>p<sub>i</sub></sub> π<sub>i</sub> = p<sub>i</sub> q<sub>i</sub>(p<sub>i</sub>, p<sub>j</sub>) − C<sub>i</sub>(q<sub>i</sub>(p<sub>i</sub>, p<sub>j</sub>))   ⇒   q<sub>i</sub> − [p<sub>i</sub> − CMg<sub>i</sub>(q<sub>i</sub>)]·b/(b² − g²) = 0</span>';
+    s += '<p>La función de reacción en precios tiene pendiente positiva (complementos estratégicos)'+(Cc[0].constMC&&Cc[1].constMC?'; con CMg constantes es lineal, R<sub>i</sub>(p<sub>j</sub>) = [b(a<sub>i</sub> + c<sub>i</sub>) − g a<sub>j</sub> + g p<sub>j</sub>]/(2b), con pendiente dR<sub>i</sub>/dp<sub>j</sub> = g/(2b) ∈ [0, ½)':'')+'. Resultado: p<sup>B</sup> = ('+fmt(R.bert.p[0],3)+', '+fmt(R.bert.p[1],3)+'), q<sup>B</sup> = ('+fmt(R.bert.q[0],3)+', '+fmt(R.bert.q[1],3)+').</p>';
+    s += '<p><b>Stackelberg en precios.</b> El líder elige p<sub>L</sub> anticipando R<sub>j</sub>(p<sub>L</sub>): ∂π<sub>L</sub>/∂p<sub>L</sub> + (∂π<sub>L</sub>/∂p<sub>j</sub>)·R<sub>j</sub>′ = 0. Como ∂π<sub>L</sub>/∂p<sub>j</sub> &gt; 0 y R<sub>j</sub>′ &gt; 0, el líder fija un precio mayor que en Bertrand; el seguidor sube menos su precio y obtiene más beneficio.</p>';
+  } else {
+    s += '<p>Con bien homogéneo la demanda de cada firma es D(p<sub>i</sub>) si p<sub>i</sub> &lt; p<sub>j</sub>, D(p<sub>i</sub>)/2 si p<sub>i</sub> = p<sub>j</sub> y 0 si p<sub>i</sub> &gt; p<sub>j</sub>: la función de beneficio es discontinua y no se aplica el cálculo diferencial. El argumento de rebaja (<i>undercutting</i>) implica que en equilibrio ninguna firma cobra por encima del CMg de la rival.</p>';
+  }
+
+  s += '<h4>5. Colusión: monopolio conjunto (resultado cooperativo)</h4>';
+  s += '<span class="eq">max<sub>q<sub>1</sub>, q<sub>2</sub></sub> π<sub>1</sub> + π<sub>2</sub>   ⇒   a<sub>i</sub> − 2b q<sub>i</sub> − 2g q<sub>j</sub> − CMg<sub>i</sub>(q<sub>i</sub>) = 0,  i = 1, 2</span>';
+  s += '<p>Respecto de Cournot aparece el término adicional −g q<sub>i</sub>: el cártel internaliza la externalidad negativa que la producción de cada firma impone sobre el precio de la otra. El hessiano [[−2b − CMg<sub>1</sub>′, −2g], [−2g, −2b − CMg<sub>2</sub>′]] es definido negativo si g &lt; b o si algún CMg es creciente; con g = b y CMg constantes el problema es cóncavo pero no estrictamente, y el cártel asigna toda la producción a la firma de menor costo (con costos iguales el reparto es indeterminado y se informa el simétrico). Resultado: q<sup>M</sup> = ('+fmt(R.coll.q[0],3)+', '+fmt(R.coll.q[1],3)+'), Π<sup>M</sup> = '+fmt(R.coll.Pi,2)+'. La colusión es indistinta entre cantidades y precios: el par (p<sup>M</sup>, q<sup>M</sup>) es el mismo.</p>';
+
+  s += '<h4>6. Competencia perfecta</h4>';
+  s += '<span class="eq">p<sub>i</sub> = a<sub>i</sub> − b q<sub>i</sub> − g q<sub>j</sub> = CMg<sub>i</sub>(q<sub>i</sub>)   ⇔   max<sub>q</sub> W = U(q) − C<sub>1</sub>(q<sub>1</sub>) − C<sub>2</sub>(q<sub>2</sub>)</span>';
+  s += '<p>Por el primer teorema del bienestar, la asignación de firmas precio-aceptantes maximiza el excedente total, que se usa como referencia para la PIE. Resultado: q<sup>C</sup> = ('+fmt(R.comp.q[0],3)+', '+fmt(R.comp.q[1],3)+'), p<sup>C</sup> = ('+fmt(R.comp.p[0],3)+', '+fmt(R.comp.p[1],3)+'), W<sup>C</sup> = '+fmt(R.comp.W,2)+'.</p>';
+
+  s += '<h4>7. Bienestar</h4>';
+  s += '<span class="eq">EC = U(q) − p<sub>1</sub>q<sub>1</sub> − p<sub>2</sub>q<sub>2</sub> = ½(b q<sub>1</sub>² + 2g q<sub>1</sub>q<sub>2</sub> + b q<sub>2</sub>²),   W = EC + π<sub>1</sub> + π<sub>2</sub>,   PIE = W<sup>C</sup> − W</span>';
+  s += '<p>Con bien homogéneo, EC = bQ²/2 (el triángulo bajo la demanda). Los costos fijos no alteran las decisiones marginales: desplazan los beneficios y W en la misma magnitud en todos los modelos, de modo que la PIE no depende de ellos.</p>';
+
+  s += '<h4>8. Juego repetido</h4>';
+  s += '<p>Con estrategias gatillo, cooperar siempre vale π<sup>M</sup>/(1 − δ); desviarse vale π<sup>D</sup> + δπ<sup>N</sup>/(1 − δ), donde π<sup>D</sup> es el beneficio de la mejor respuesta a la estrategia colusiva de la rival. La colusión es un equilibrio perfecto en subjuegos si</p>';
+  s += '<span class="eq">π<sup>M</sup>/(1 − δ) ≥ π<sup>D</sup> + δ π<sup>N</sup>/(1 − δ)   ⇔   δ ≥ δ* = (π<sup>D</sup> − π<sup>M</sup>)/(π<sup>D</sup> − π<sup>N</sup>)</span>';
+
+  s += '<h4>9. Método numérico</h4>';
+  s += '<p>Las funciones de reacción en cantidades se obtienen por bisección sobre la CPO (estrictamente decreciente en q<sub>i</sub>); las de precios, por búsqueda en grilla y bisección sobre la derivada analítica, contemplando los quiebres de la demanda cuando una firma deja de vender. Los equilibrios de Nash se calculan por iteración de mejores respuestas (contracción, pues |R<sub>i</sub>′| &lt; 1), los de Stackelberg por optimización global sobre la variable del líder, y la colusión y la competencia por maximización anidada de funciones cóncavas. El motor fue validado contra las soluciones cerradas del caso lineal.</p>';
+  el('deriv').innerHTML = s;
+}
+
+/* ============================================================
+   9. LAZO PRINCIPAL
+   ============================================================ */
+function drawAll(){ drawMain(); drawBar(); }
+let raf=null;
+function update(){
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(()=>{
+    raf=null;
+    SOL = D.solveAll(engineParams()); M = SOL.M; R = SOL.R;
+    ST = D.stability(M, R);
+    if (!R[state.isoAt]){ state.isoAt='cournot'; el('isoAt').value='cournot'; }
+    [...el('isoAt').options].forEach(o=>{ o.disabled = !R[o.value]; });
+    renderFirmInfo(); renderTable(); renderBertNote(); renderRank(); renderStability(); renderSpaceNote(); renderDerivation();
+    drawAll();
+    window.__duoReady = true;
+  });
+}
+window.addEventListener('resize', ()=>{ clearTimeout(window._rz); window._rz=setTimeout(drawAll,100); });
+applyPreset('base');
+// Envuelve el texto de cada rótulo de las casillas para que los subíndices no se separen como ítems flex
+document.querySelectorAll('#togCurves label').forEach(l=>{
+  const sp=document.createElement('span');
+  [...l.childNodes].filter(nd=>!(nd.nodeType===1 && (nd.tagName==='INPUT' || nd.tagName==='svg' || nd.classList.contains('sw')))).forEach(nd=>sp.appendChild(nd));
+  l.appendChild(sp);
+});
+syncControls(); syncToggles(); paintLegendMarkers();
+update();
+// Acceso para depuración y pruebas automatizadas
+window.__duo = { state, get R(){ return R; }, get M(){ return M; }, applyPreset: k=>{ applyPreset(k); syncControls(); update(); }, update, syncControls };
+})();
+</script>
+</body>
+</html>
